@@ -6,6 +6,9 @@ import RecentIncomeTable from './recent-income'
 import ExpenseCard from './expenCard'
 import RecentExpenseTable from './recent-expense'
 import LossCard from './loss-card'
+import RevenueChart from '../financial/revenue-chart'
+import ExpensesBreakdown from '../financial/expenses-breakdown'
+import { ExpenseAllocationChart } from './chat'
 
 export default function ProfitLossOverview() {
     return (
@@ -36,6 +39,14 @@ export default function ProfitLossOverview() {
 
             {/* expense Cards */}
             <LossCard />
+            
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
+                <div className="lg:col-span-3">
+                    <RevenueChart title={'Profit & Loss Overview'} description={'Income vs Expenses (This year)'} />
+                </div>
+                <ExpenseAllocationChart />
+            </div>
 
 
             {/* Recent Activities */}

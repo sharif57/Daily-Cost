@@ -25,13 +25,13 @@ const data = [
   { month: 'Dec', Revenue: 145000, Expenses: 75000 },
 ]
 
-export default function RevenueChart() {
+export default function RevenueChart({title, description}: {title?: string | null, description?: string | null}) {
   return (
     <div className="bg-white rounded-lg p-6 border border-border shadow-sm">
       <div className="mb-6">
-        <h2 className="text-lg font-medium text-[#0D0C0C]">Financial Overview</h2>
+        <h2 className="text-lg font-medium text-[#0D0C0C]">{title}</h2>
         <p className="text-sm text-muted-foreground">
-          Revenue vs Expenses (Last 6 Month)
+          {description}
         </p>
       </div>
 
