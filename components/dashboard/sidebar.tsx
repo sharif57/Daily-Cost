@@ -162,7 +162,7 @@ export default function Sidebar() {
                         href={child.href}
                         className={`relative block px-4 py-2 rounded text-sm transition-all ${isChildActive
                             ? ' text-white font-bold'
-                            : 'text-sidebar-foreground hover:bg-sidebar-accent'
+                            : 'text-[#9CA3AF] hover:bg-sidebar-accent'
                           }`}
                       >
                         {child.label}
