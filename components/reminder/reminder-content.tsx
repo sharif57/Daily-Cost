@@ -1,20 +1,10 @@
-// import React from 'react'
 
-// export default function RemindersContent() {
-//   return (
-//     <div>
-      
-//     </div>
-//   )
-// }
-'use client'
 
-import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
-import GlobalKPICards from '../finance/global-kpi-cards'
+
 import GlobalRevenueChart from '../finance/global-revenue-chart'
 import GlobalActivitiesTable from '../finance/global-activities-table'
 import RemindersCard from './reminder-card'
+import ReminderTable from './reminderT-table'
 
 
 export default function RemindersContent() {
@@ -36,11 +26,9 @@ export default function RemindersContent() {
       {/* KPI Cards */}
       <RemindersCard />
 
-      {/* Charts */}
-      <GlobalRevenueChart />
+      {/* Tables */}
+      <ReminderTable />
 
-      {/* Recent Activities */}
-      <GlobalActivitiesTable />
     </div>
   )
 }
