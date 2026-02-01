@@ -1,8 +1,6 @@
 
 
 
-import GlobalRevenueChart from '../finance/global-revenue-chart'
-import GlobalActivitiesTable from '../finance/global-activities-table'
 import RemindersCard from './reminder-card'
 import ReminderTable from './reminderT-table'
 

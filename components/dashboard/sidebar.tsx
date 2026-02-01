@@ -54,6 +54,11 @@ const menuItems = [
     icon: BarChart3,
     submenu: true,
     href: '/reports',
+    children: [
+      { id: 'generate-report', label: 'Generate Report', href: '/reports/generate' },
+      { id: 'report-history', label: 'Report History', href: '/reports/history' },
+      { id: 'download-center', label: 'Download Center', href: '/reports/download' },
+    ],
   },
   {
     id: 'analytics',
@@ -161,8 +166,8 @@ export default function Sidebar() {
                         key={child.id}
                         href={child.href}
                         className={`relative block px-4 py-2 rounded text-sm transition-all ${isChildActive
-                            ? ' text-white font-bold'
-                            : 'text-[#9CA3AF] hover:bg-sidebar-accent'
+                          ? ' text-white font-bold'
+                          : 'text-[#9CA3AF] hover:bg-sidebar-accent'
                           }`}
                       >
                         {child.label}

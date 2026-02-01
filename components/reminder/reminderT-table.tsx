@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
-import Sour from '../icon/sourch'
+import  { useState } from 'react'
 import Tax from '../icon/tax'
 
 interface Reminder {
