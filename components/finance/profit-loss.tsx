@@ -9,6 +9,7 @@ import LossCard from './loss-card'
 import RevenueChart from '../financial/revenue-chart'
 import ExpensesBreakdown from '../financial/expenses-breakdown'
 import { ExpenseAllocationChart } from './chat'
+import Statement from './statement'
 
 export default function ProfitLossOverview() {
     return (
@@ -50,7 +51,7 @@ export default function ProfitLossOverview() {
 
 
             {/* Recent Activities */}
-            <RecentExpenseTable />
+            <Statement />
         </div>
     )
 }
