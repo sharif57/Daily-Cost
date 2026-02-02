@@ -78,6 +78,11 @@ const menuItems = [
     icon: Settings,
     submenu: true,
     href: '/settings',
+    children: [
+      { id: 'Platform Settings', label: 'Platform Settings', href: '/settings/platform' },
+      { id: 'Currency & App Config', label: 'Currency & App Config', href: '/settings/config' },
+      { id: 'Profile Settings', label: 'Profile Settings', href: '/settings/profile' },
+    ]
   },
   {
     id: 'security',
