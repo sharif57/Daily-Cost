@@ -1,13 +1,45 @@
-/* Sigvar font-face declaration */
+/* Sigvar Font - Local Files from Public Folder */
+
 @font-face {
   font-family: "Sigvar";
-  src: url("https://fonts.gstatic.com/s/sigvar/v1/Sigvar-Regular.woff2")
-    format("woff2");
-  font-weight: normal;
+  src: url("/Sigbar Font Family/SigvarRegular.ttf") format("truetype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
+@font-face {
+  font-family: "Sigvar";
+  src: url("/Sigbar Font Family/SigvarBold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sigvar";
+  src: url("/Sigbar Font Family/SigvarItalic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Sigvar";
+  src: url("/Sigbar Font Family/SigvarBoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --font-sigvar:
+    "Sigvar", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html,
 body {
-  font-family: "Sigvar", sans-serif;
+  font-family: var(--font-sigvar);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
