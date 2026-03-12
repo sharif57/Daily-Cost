@@ -8,8 +8,11 @@ import ExpensesBreakdown from '@/components/financial/expenses-breakdown'
 import RiskIndicators from '@/components/financial/risk-indicators'
 import TransactionsTable from '@/components/financial/transactions-table'
 import { Download } from 'lucide-react'
+import { useParams } from 'next/navigation'
 
 export default function FinancialOverviewPage() {
+  const params = useParams();
+  const userId = params.id
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -29,20 +32,20 @@ export default function FinancialOverviewPage() {
             </div>
 
             {/* KPI Cards */}
-            <FinancialKPICards />
+            <FinancialKPICards userId={userId as string} />
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+            {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
               <div className="lg:col-span-2">
                 <RevenueChart title={'Financial Overview'} description={'Revenue vs Expenses (Last 6 Month)'} />
               </div>
               <ExpensesBreakdown />
-            </div>
+            </div> */}
 
             {/* Risk & Transactions Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 mb-8">
-              <RiskIndicators />
-              <TransactionsTable />
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-8 mb-8">
+              {/* <RiskIndicators /> */}
+              <TransactionsTable userId={userId as string}  />
             </div>
           </div>
         </main>

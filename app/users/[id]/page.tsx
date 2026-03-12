@@ -16,12 +16,12 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Left Panel - User Profile */}
             <div className="lg:col-span-1">
-              <UserProfileCard userId={params.id} />
+              <UserProfileCard  />
             </div>
             {/* Right Panel - Recent Activity */}
-            <div className="lg:col-span-2">
+            {/* <div className="lg:col-span-2">
               <RecentActivity userId={params.id} />
-            </div>
+            </div> */}
           </div>
         </main>
       </div>

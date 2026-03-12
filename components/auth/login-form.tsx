@@ -2,30 +2,41 @@
 
 import React, { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import { useLoginMutation } from '@/redux/feature/authSlice'
+import { toast } from 'sonner'
+import { saveTokens } from '@/service/authService'
 
 export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('abdul@gmail.com')
+  const [password, setPassword] = useState('12345678')
+
+  const [login, { isLoading }] = useLoginMutation();
+
+
+  // {
+  //   "email": "abdul@gmail.com",
+  //     "password": "12345678"
+  // }
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    
+
     try {
       // TODO: Add authentication logic here
       console.log('Login attempt:', { email, password })
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
+
+      const response = await login({ email, password }).unwrap()
+
+      toast.success(response?.message || 'Login successful! Redirecting to dashboard...')
+      localStorage.setItem('accessToken', response?.data?.access_token || '')
+      await saveTokens(response?.data?.access_token || '')
       // On success, redirect to dashboard
       window.location.href = '/'
-    } catch (error) {
-      console.error('Login error:', error)
+    } catch (error : any) {
+      toast.error( error?.data?.message || 'Invalid email or password. Please try again.')
     } finally {
-      setIsLoading(false)
     }
   }
 

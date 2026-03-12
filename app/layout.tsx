@@ -2,6 +2,8 @@ import React from "react"
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
+import Providers from "@/Provider/Providers"
+import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
   title: 'Bespoke Capital - Dashboard',
@@ -34,7 +36,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        {children}
+        <Providers>
+          <Toaster  /> {/* Add Toaster for notifications */}
+          {children}
+        </Providers>
         <Analytics />
       </body>
     </html>

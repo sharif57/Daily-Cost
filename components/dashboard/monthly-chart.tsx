@@ -1,6 +1,10 @@
 'use client'
 
-import React from 'react'
+import {
+  type DashboardYearUserCount,
+  useDashboardReportQuery,
+} from '@/redux/feature/dashboardSlice'
+import { useMemo } from 'react'
 import {
   LineChart,
   Line,
@@ -9,25 +13,34 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 
-const data = [
-  { month: 'Jan', users: 9000 },
-  { month: 'Feb', users: 10500 },
-  { month: 'Mar', users: 11200 },
-  { month: 'Apr', users: 12000 },
-  { month: 'May', users: 13500 },
-  { month: 'Jun', users: 14800 },
-  { month: 'Jul', users: 15200 },
-  { month: 'Aug', users: 15900 },
-  { month: 'Sep', users: 16200 },
-  { month: 'Oct', users: 15500 },
-  { month: 'Nov', users: 16100 },
-  { month: 'Dec', users: 16200 },
-]
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+const buildMonthlyChartData = (usersByMonth?: DashboardYearUserCount[]) => {
+  const counts = new Array<number>(12).fill(0)
+
+  usersByMonth?.forEach((item) => {
+    const monthIndex = item.month - 1
+    if (monthIndex >= 0 && monthIndex < 12) {
+      // Sum repeated month entries from API into one month bucket.
+      counts[monthIndex] += item.count
+    }
+  })
+
+  return MONTH_LABELS.map((label, index) => ({
+    month: label,
+    users: counts[index],
+  }))
+}
 
 export default function MonthlyChart() {
+  const { data, isLoading, isError } = useDashboardReportQuery(undefined)
+
+  const chartData = useMemo(() => {
+    return buildMonthlyChartData(data?.data?.currentYearUserCount)
+  }, [data?.data?.currentYearUserCount])
+
   return (
     <div className="bg-card rounded-lg p-4 sm:p-6 border border-border">
       <div className="mb-6">
@@ -39,9 +52,21 @@ export default function MonthlyChart() {
         </p>
       </div>
 
+      {isLoading && (
+        <p className="text-xs sm:text-sm text-muted-foreground mb-3">
+          Loading monthly chart data...
+        </p>
+      )}
+
+      {isError && (
+        <p className="text-xs sm:text-sm text-red-600 mb-3">
+          Failed to load chart data. Showing default monthly values.
+        </p>
+      )}
+
       <div className="w-full h-80">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
             <XAxis
               dataKey="month"
@@ -56,6 +81,7 @@ export default function MonthlyChart() {
                 borderRadius: '8px',
               }}
               labelStyle={{ color: '#1f2937' }}
+              formatter={(value) => [`${value}`, 'Users']}
             />
             <Line
               type="monotone"

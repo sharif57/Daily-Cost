@@ -1,181 +1,11 @@
 'use client'
 
-import React from 'react'
 import Link from 'next/link'
-
-interface User {
-  id: string
-  name: string
-  title: string
-  email: string
-  avatar: string
-  business: string
-  businessType: string
-  lastActive: string
-  revenue: string
-  expenseStatus: string
-  expenseStatusColor: string
-  riskFlag: string
-  riskFlagColor: string
-}
-
-const users: User[] = [
-  {
-    id: '1',
-    name: 'Sr. Accountant',
-    title: 'Michelle Rivera',
-    email: 'michelle.rivera@example.com',
-    avatar: 'MR',
-    business: 'TechFlow Solutions',
-    businessType: 'SaaS / Enterprise',
-    lastActive: '2 mins ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Critical',
-    expenseStatusColor: 'text-red-500',
-    riskFlag: 'Blocked',
-    riskFlagColor: 'text-red-500',
-  },
-  {
-    id: '2',
-    name: 'Sr. Accountant',
-    title: 'Dolores Chambers',
-    email: 'dolores.chambers@example.com',
-    avatar: 'DC',
-    business: 'SkyNet Systems',
-    businessType: 'AI / Defense',
-    lastActive: '3 days ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Healthy',
-    expenseStatusColor: 'text-green-500',
-    riskFlag: 'Normal',
-    riskFlagColor: 'text-gray-500',
-  },
-  {
-    id: '3',
-    name: 'Sr. Accountant',
-    title: 'Debbie Baker',
-    email: 'debbie.baker@example.com',
-    avatar: 'DB',
-    business: 'Apex Global',
-    businessType: 'Logistics',
-    lastActive: 'Yesterday',
-    revenue: '$124,400.00',
-    expenseStatus: 'At Risk',
-    expenseStatusColor: 'text-orange-500',
-    riskFlag: 'Watch',
-    riskFlagColor: 'text-orange-500',
-  },
-  {
-    id: '4',
-    name: 'Sr. Accountant',
-    title: 'Debra Holt',
-    email: 'debra.holt@example.com',
-    avatar: 'DH',
-    business: 'DesignCo',
-    businessType: 'Creative Agency',
-    lastActive: '1 hour ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Overspeeded',
-    expenseStatusColor: 'text-purple-500',
-    riskFlag: 'High Risk',
-    riskFlagColor: 'text-red-500',
-  },
-  {
-    id: '5',
-    name: 'Sr. Accountant',
-    title: 'Dolores Chambers',
-    email: 'dolores.chambers@example.com',
-    avatar: 'DC',
-    business: 'SkyNet Systems',
-    businessType: 'AI / Defense',
-    lastActive: '3 days ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Healthy',
-    expenseStatusColor: 'text-green-500',
-    riskFlag: 'Normal',
-    riskFlagColor: 'text-gray-500',
-  },
-  {
-    id: '6',
-    name: 'Sr. Accountant',
-    title: 'Michelle Rivera',
-    email: 'michelle.rivera@example.com',
-    avatar: 'MR',
-    business: 'TechFlow Solutions',
-    businessType: 'SaaS / Enterprise',
-    lastActive: '2 mins ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Critical',
-    expenseStatusColor: 'text-red-500',
-    riskFlag: 'Blocked',
-    riskFlagColor: 'text-red-500',
-  },
-  {
-    id: '7',
-    name: 'Sr. Accountant',
-    title: 'Dolores Chambers',
-    email: 'dolores.chambers@example.com',
-    avatar: 'DC',
-    business: 'SkyNet Systems',
-    businessType: 'AI / Defense',
-    lastActive: '3 days ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Healthy',
-    expenseStatusColor: 'text-green-500',
-    riskFlag: 'Normal',
-    riskFlagColor: 'text-gray-500',
-  },
-  {
-    id: '8',
-    name: 'Sr. Accountant',
-    title: 'Debbie Baker',
-    email: 'debbie.baker@example.com',
-    avatar: 'DB',
-    business: 'Apex Global',
-    businessType: 'Logistics',
-    lastActive: 'Yesterday',
-    revenue: '$124,400.00',
-    expenseStatus: 'At Risk',
-    expenseStatusColor: 'text-orange-500',
-    riskFlag: 'Watch',
-    riskFlagColor: 'text-orange-500',
-  },
-  {
-    id: '9',
-    name: 'Sr. Accountant',
-    title: 'Michelle Rivera',
-    email: 'michelle.rivera@example.com',
-    avatar: 'MR',
-    business: 'TechFlow Solutions',
-    businessType: 'SaaS / Enterprise',
-    lastActive: '2 mins ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Critical',
-    expenseStatusColor: 'text-red-500',
-    riskFlag: 'Blocked',
-    riskFlagColor: 'text-red-500',
-  },
-  {
-    id: '10',
-    name: 'Sr. Accountant',
-    title: 'Debra Holt',
-    email: 'debra.holt@example.com',
-    avatar: 'DH',
-    business: 'DesignCo',
-    businessType: 'Creative Agency',
-    lastActive: '1 hour ago',
-    revenue: '$124,400.00',
-    expenseStatus: 'Overspeeded',
-    expenseStatusColor: 'text-purple-500',
-    riskFlag: 'High Risk',
-    riskFlagColor: 'text-red-500',
-  },
-]
+import { AppUser } from '@/redux/feature/userSlice'
 
 interface UserTableProps {
-  searchTerm: string
-  currentPage: number
-  rowsPerPage: number
+  users: AppUser[]
+  isLoading: boolean
 }
 
 function getAvatarColor(initials: string): string {
@@ -191,17 +21,23 @@ function getAvatarColor(initials: string): string {
   return colors[index]
 }
 
-export default function UserTable({
-  searchTerm,
-  currentPage,
-  rowsPerPage,
-}: UserTableProps) {
-  const filteredUsers = users.filter((user) =>
-    user.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.business.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+function getInitials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'U'
+}
 
+function formatRole(role: string): string {
+  return role.charAt(0).toUpperCase() + role.slice(1).toLowerCase()
+}
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString()
+}
+
+export default function UserTable({
+  users,
+  isLoading,
+}: UserTableProps) {
   return (
     <div className="overflow-x-auto border border-border rounded-lg">
       <table className="w-full">
@@ -214,27 +50,43 @@ export default function UserTable({
               />
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-              User Details
+              User
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-              Business
+              Role
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-              Last Active
+              Phone
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-              Revenue (MO)
+              Status
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-              Expenses Status
+              Verified
             </th>
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
-              Risk Flag
+              Joined
             </th>
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user, index) => (
+          {isLoading && (
+            <tr>
+              <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                Loading users...
+              </td>
+            </tr>
+          )}
+
+          {!isLoading && users.length === 0 && (
+            <tr>
+              <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted-foreground">
+                No users found for the selected filters.
+              </td>
+            </tr>
+          )}
+
+          {!isLoading && users.map((user) => (
             <tr
               key={user.id}
               className="border-b border-border hover:bg-secondary/50 transition-colors"
@@ -248,16 +100,24 @@ export default function UserTable({
               <td className="px-4 py-3">
                 <Link href={`/users/${user.id}`}>
                   <div className="flex items-center gap-3 cursor-pointer">
-                    <div
-                      className={`w-10 h-10 rounded-full ${getAvatarColor(
-                        user.avatar
-                      )} flex items-center justify-center text-white text-xs font-semibold`}
-                    >
-                      {user.avatar}
-                    </div>
+                    {user.image ? (
+                      <img
+                        src={user.image}
+                        alt={user.name}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className={`w-10 h-10 rounded-full ${getAvatarColor(
+                          getInitials(user.name)
+                        )} flex items-center justify-center text-white text-xs font-semibold`}
+                      >
+                        {getInitials(user.name)}
+                      </div>
+                    )}
                     <div>
                       <p className="text-sm font-semibold text-foreground hover:text-primary transition-colors">
-                        {user.title}
+                        {user.name}
                       </p>
                       <p className="text-xs text-muted-foreground">{user.email}</p>
                     </div>
@@ -265,44 +125,27 @@ export default function UserTable({
                 </Link>
               </td>
               <td className="px-4 py-3">
-                <div>
-                  <p className="text-sm font-medium text-foreground">
-                    {user.business}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {user.businessType}
-                  </p>
-                </div>
-              </td>
-              <td className="px-4 py-3">
-                <p className="text-sm text-muted-foreground">{user.lastActive}</p>
-              </td>
-              <td className="px-4 py-3">
                 <p className="text-sm font-medium text-foreground">
-                  {user.revenue}
+                  {formatRole(user.role)}
                 </p>
               </td>
               <td className="px-4 py-3">
-                <span
-                  className={`text-sm font-medium ${user.expenseStatusColor}`}
-                >
-                  {user.expenseStatus}
+                <p className="text-sm text-muted-foreground">
+                  {user.phone ?? 'N/A'}
+                </p>
+              </td>
+              <td className="px-4 py-3">
+                <span className={`text-sm font-medium ${user.online ? 'text-green-600' : 'text-gray-500'}`}>
+                  {user.online ? 'Active' : 'Inactive'}
                 </span>
               </td>
               <td className="px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`text-sm font-medium ${user.riskFlagColor}`}
-                  >
-                    {user.riskFlag}
-                  </span>
-                  {user.riskFlag === 'Blocked' && (
-                    <span className="text-red-500 text-sm">✕</span>
-                  )}
-                  {user.riskFlag === 'Watch' && (
-                    <span className="text-orange-500 text-sm">👁</span>
-                  )}
-                </div>
+                <span className={`text-sm font-medium ${user.is_verified ? 'text-green-600' : 'text-red-600'}`}>
+                  {user.is_verified ? 'Verified' : 'Unverified'}
+                </span>
+              </td>
+              <td className="px-4 py-3">
+                <p className="text-sm text-muted-foreground">{formatDate(user.created_at)}</p>
               </td>
             </tr>
           ))}

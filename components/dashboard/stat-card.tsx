@@ -9,7 +9,7 @@ interface StatCardProps {
   change: string
   trend: 'up' | 'down' | 'warning' | 'danger'
   color: string
-  icon: string
+  icon: React.ReactNode
 }
 
 export default function StatCard({
@@ -52,7 +52,7 @@ export default function StatCard({
           </div>
         </div>
         <div
-          className={` ${color} flex items-center justify-center text-xl sm:text-2xl flex-shrink-0`}
+          className={` ${color} flex items-center justify-center text-xl sm:text-2xl shrink-0`}
         >
           {icon}
         </div>

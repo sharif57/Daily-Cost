@@ -1,41 +1,66 @@
+import { useFinancialOverviewQuery } from '@/redux/feature/userSlice'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 
-const kpis = [
-  {
-    label: 'Total Revenue (YTD)',
-    value: '$1,250,000',
-    trend: '+12%',
-    comparison: 'vs last Year',
-    icon: TrendingUp,
-    positive: true,
-  },
-  {
-    label: 'Total Expenses (YTD)',
-    value: '$840,000',
-    trend: '-5%',
-    comparison: 'vs last Year',
-    icon: TrendingDown,
-    positive: false,
-  },
-  {
-    label: 'Total Income',
-    value: '$410,000',
-    trend: '+18%',
-    comparison: 'Profit Margin: 32%',
-    icon: TrendingUp,
-    positive: true,
-  },
-  {
-    label: 'Risk Profile',
-    value: 'Low',
-    trend: '+12%',
-    comparison: 'Score: 15/100',
-    icon: TrendingUp,
-    positive: true,
-  },
-]
+const formatCurrency = (value?: number) => {
+  return `$${(value ?? 0).toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+}
 
-export default function FinancialKPICards() {
+export default function FinancialKPICards({ userId }: { userId: string }) {
+  const { data, isLoading, isError } = useFinancialOverviewQuery(userId)
+  const report = data?.data
+  const growthPercent = report?.growth_vs_previous_month?.percentage ?? 0
+  const growthIncome = report?.growth_vs_previous_month?.income ?? 0
+
+  const kpis = [
+    {
+      label: 'Total Income',
+      value: formatCurrency(report?.total_income),
+      trend: `${growthPercent >= 0 ? '+' : ''}${growthPercent.toFixed(2)}%`,
+      comparison: 'vs previous month',
+      icon: growthPercent >= 0 ? TrendingUp : TrendingDown,
+      positive: growthPercent >= 0,
+    },
+    {
+      label: 'Average Monthly Income',
+      value: formatCurrency(report?.average_monthly_income),
+      trend: `${growthPercent >= 0 ? '+' : ''}${growthPercent.toFixed(2)}%`,
+      comparison: 'monthly average',
+      icon: growthPercent >= 0 ? TrendingUp : TrendingDown,
+      positive: growthPercent >= 0,
+    },
+    {
+      label: 'Growth Income Amount',
+      value: formatCurrency(growthIncome),
+      trend: `${growthPercent >= 0 ? '+' : ''}${growthPercent.toFixed(2)}%`,
+      comparison: 'growth income value',
+      icon: growthPercent >= 0 ? TrendingUp : TrendingDown,
+      positive: growthPercent >= 0,
+    },
+    {
+      label: 'Recent Transactions',
+      value: `${report?.recent_transactions?.length ?? 0}`,
+      trend: `${report?.meta?.total ?? 0}`,
+      comparison: 'total transaction records',
+      icon: TrendingUp,
+      positive: true,
+    },
+  ]
+
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading financial overview...</p>
+  }
+
+  if (isError) {
+    return (
+      <p className="text-sm text-red-600">
+        Failed to load income report. Please refresh and try again.
+      </p>
+    )
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {kpis.map((kpi, index) => {
@@ -53,9 +78,8 @@ export default function FinancialKPICards() {
             </div>
             <div className="flex items-center gap-4">
               <div
-                className={`flex items-center gap-1 text-sm font-semibold ${
-                  kpi.positive ? 'text-green-600' : 'text-red-600'
-                }`}
+                className={`flex items-center gap-1 text-sm font-semibold ${kpi.positive ? 'text-green-600' : 'text-red-600'
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{kpi.trend}</span>
