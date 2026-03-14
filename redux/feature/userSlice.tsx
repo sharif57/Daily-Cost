@@ -94,7 +94,7 @@ export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     userProfile: builder.query({
       query: () => ({
-        url: "/accounts/profile/",
+        url: "/user/profile",
         method: "GET",
       }),
 
@@ -103,7 +103,7 @@ export const userApi = baseApi.injectEndpoints({
 
     updateProfile: builder.mutation({
       query: (data) => ({
-        url: "/accounts/profile/",
+        url: "/user/update-profile",
         method: "PATCH",
         body: data,
         // Don't set Content-Type so browser adds multipart/form-data boundary for FormData

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Edit2, Mail, MapPin, Clock, Shield, Upload, X } from 'lucide-react'
+import { Edit2, MapPin, Clock, Shield, Upload, X } from 'lucide-react'
+import { AppUser, useUpdateProfileMutation, useUserProfileQuery } from '@/redux/feature/userSlice'
 
 interface UserProfile {
     fullName: string
@@ -24,13 +25,40 @@ interface DialogState {
 
 export default function Profile() {
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const imageBaseUrl = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '').replace(/\/$/, '')
+
+    const resolveImageUrl = (imagePath?: string | null): string | null => {
+        if (!imagePath) {
+            return null
+        }
+
+        if (
+            imagePath.startsWith('http://') ||
+            imagePath.startsWith('https://') ||
+            imagePath.startsWith('data:') ||
+            imagePath.startsWith('blob:')
+        ) {
+            return imagePath
+        }
+
+        if (!imageBaseUrl) {
+            return imagePath
+        }
+
+        return imagePath.startsWith('/') ? `${imageBaseUrl}${imagePath}` : `${imageBaseUrl}/${imagePath}`
+    }
+
+    const { data, isLoading: isProfileLoading } = useUserProfileQuery(undefined)
+    const [updateProfile, { isLoading: isUpdatingProfile }] = useUpdateProfileMutation()
+    const user = data?.data as AppUser | undefined
+
     const [profile, setProfile] = useState<UserProfile>({
-        fullName: 'Devon Lane',
-        email: 'curtis.weaver@example.com',
-        role: 'Super Admin',
-        location: 'London',
-        lastLogin: 'Oct 24, 2023 - 14:20 GMT',
-        joinedDate: 'Jan 15, 2023',
+        fullName: '',
+        email: '',
+        role: '',
+        location: 'N/A',
+        lastLogin: 'N/A',
+        joinedDate: 'N/A',
         avatar: null,
     })
 
@@ -38,11 +66,31 @@ export default function Profile() {
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [previewImage, setPreviewImage] = useState<string | null>(profile.avatar)
+    const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
     const [dialogs, setDialogs] = useState<DialogState>({
         editProfile: false,
         changePassword: false,
         uploadImage: false,
     })
+
+    useEffect(() => {
+        if (!user) {
+            return
+        }
+
+        setProfile({
+            fullName: user.name ?? '',
+            email: user.email ?? '',
+            role: user.role ?? '',
+            location: 'N/A',
+            lastLogin: user.updated_at ? new Date(user.updated_at).toLocaleString() : 'N/A',
+            joinedDate: user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A',
+            avatar: resolveImageUrl(user.image),
+        })
+
+        setEditingName(user.name ?? '')
+        setPreviewImage(resolveImageUrl(user.image))
+    }, [user, imageBaseUrl])
 
     const handleOpenDialog = (dialog: keyof DialogState) => {
         setDialogs((prev) => ({ ...prev, [dialog]: true }))
@@ -57,12 +105,15 @@ export default function Profile() {
             setConfirmPassword('')
         } else if (dialog === 'uploadImage') {
             setPreviewImage(profile.avatar)
+            setSelectedImageFile(null)
         }
     }
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
+            setSelectedImageFile(file)
+
             const reader = new FileReader()
             reader.onloadend = () => {
                 setPreviewImage(reader.result as string)
@@ -71,17 +122,41 @@ export default function Profile() {
         }
     }
 
-    const handleSaveImage = () => {
-        if (previewImage) {
+    const handleSaveImage = async () => {
+        if (!selectedImageFile) {
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append('image', selectedImageFile)
+
+            await updateProfile(formData).unwrap()
+
             setProfile((prev) => ({ ...prev, avatar: previewImage }))
             handleCloseDialog('uploadImage')
+        } catch (error) {
+            console.error('Failed to update profile image:', error)
+            alert('Failed to update profile image. Please try again.')
         }
     }
 
-    const handleSaveProfile = () => {
-        if (editingName.trim()) {
-            setProfile((prev) => ({ ...prev, fullName: editingName }))
+    const handleSaveProfile = async () => {
+        if (!editingName.trim()) {
+            return
+        }
+
+        try {
+            const formData = new FormData()
+            formData.append('name', editingName.trim())
+
+            await updateProfile(formData).unwrap()
+
+            setProfile((prev) => ({ ...prev, fullName: editingName.trim() }))
             handleCloseDialog('editProfile')
+        } catch (error) {
+            console.error('Failed to update profile:', error)
+            alert('Failed to update profile. Please try again.')
         }
     }
 
@@ -132,7 +207,9 @@ export default function Profile() {
 
                         {/* Profile Info */}
                         <div className="flex-1">
-                            <h1 className="text-2xl sm:text-4xl font-bold text-white mb-3">{profile.fullName}</h1>
+                            <h1 className="text-2xl sm:text-4xl font-bold text-white mb-3">
+                                {isProfileLoading ? 'Loading...' : profile.fullName}
+                            </h1>
 
                             <div className="flex flex-wrap items-center gap-3 mb-4">
                                 <span className="inline-block px-4 py-1.5 bg-white text-gray-900 rounded-full text-sm font-semibold">
@@ -238,7 +315,7 @@ export default function Profile() {
 
             {/* Edit Profile Dialog */}
             {dialogs.editProfile && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6">
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Edit Profile</h2>
 
@@ -264,9 +341,10 @@ export default function Profile() {
                             </Button>
                             <Button
                                 onClick={handleSaveProfile}
+                                disabled={isUpdatingProfile || !editingName.trim()}
                                 className="rounded-full bg-[#8491FF] hover:bg-[#7080E0] text-white"
                             >
-                                Save Changes
+                                {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
                             </Button>
                         </div>
                     </div>
@@ -275,7 +353,7 @@ export default function Profile() {
 
             {/* Change Password Dialog */}
             {dialogs.changePassword && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6">
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Change Password</h2>
 
@@ -329,7 +407,7 @@ export default function Profile() {
 
             {/* Upload Image Dialog */}
             {dialogs.uploadImage && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4  bg-opacity-50">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
                     <div className="bg-white rounded-2xl shadow-lg max-w-md w-full p-6">
                         <div className="flex items-center justify-between mb-4">
                             <h2 className="text-xl font-bold text-gray-900">Upload Profile Picture</h2>
@@ -385,10 +463,10 @@ export default function Profile() {
                             </Button>
                             <Button
                                 onClick={handleSaveImage}
-                                disabled={!previewImage}
+                                disabled={!selectedImageFile || isUpdatingProfile}
                                 className="rounded-full bg-[#8491FF] hover:bg-[#7080E0] text-white disabled:opacity-50"
                             >
-                                Save Image
+                                {isUpdatingProfile ? 'Saving...' : 'Save Image'}
                             </Button>
                         </div>
                     </div>
