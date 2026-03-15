@@ -2,16 +2,38 @@
 
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
-import RecentIncomeTable from './recent-income'
-import ExpenseCard from './expenCard'
-import RecentExpenseTable from './recent-expense'
 import LossCard from './loss-card'
 import RevenueChart from '../financial/revenue-chart'
-import ExpensesBreakdown from '../financial/expenses-breakdown'
 import { ExpenseAllocationChart } from './chat'
 import Statement from './statement'
+import { useSearchParams } from 'next/navigation'
+import { useProfitLossQuery } from '@/redux/feature/userSlice'
+import { Suspense, useMemo, useState } from 'react'
 
-export default function ProfitLossOverview() {
+ function ProfitLossOverview() {
+
+    const searchParams = useSearchParams()
+    const [page, setPage] = useState(1)
+    const [limit, setLimit] = useState(10)
+
+    const queryUserId = searchParams.get('userId')
+    
+    const userId = queryUserId  || ''
+
+    const { data, isLoading, isError } = useProfitLossQuery(
+        { id: userId, page, limit },
+        { skip: !userId },
+    )
+
+    const report = data?.data
+    const meta = useMemo(() => report?.meta ?? data?.meta, [data?.meta, report?.meta])
+
+    const handleLimitChange = (nextLimit: number) => {
+        setLimit(nextLimit)
+        setPage(1)
+    }
+
+
     return (
         <div className="p-4 sm:p-6 space-y-6">
             {/* Header */}
@@ -38,20 +60,58 @@ export default function ProfitLossOverview() {
                 </div>
             </div>
 
+            {!userId && (
+                <p className="text-sm text-muted-foreground">
+                    User ID not found. Add `?userId=...` in URL or login first.
+                </p>
+            )}
+
+            {isError && (
+                <p className="text-sm text-red-600">Failed to load profit and loss report.</p>
+            )}
+
             {/* expense Cards */}
-            <LossCard />
-            
+            <LossCard report={report} isLoading={isLoading} isError={isError} />
+
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-8">
                 <div className="lg:col-span-3">
-                    <RevenueChart title={'Profit & Loss Overview'} description={'Income vs Expenses (This year)'} />
+                    <RevenueChart
+                        title={'Profit & Loss Overview'}
+                        description={'Income vs Expenses (This year)'}
+                        data={report?.yearly_monthly_data ?? []}
+                        isLoading={isLoading}
+                    />
                 </div>
-                <ExpenseAllocationChart />
+                <ExpenseAllocationChart
+                    categoryWiseExpense={report?.category_wise_expense ?? {}}
+                    totalExpense={report?.total_expense ?? 0}
+                    isLoading={isLoading}
+                />
             </div>
 
 
             {/* Recent Activities */}
-            <Statement />
+            <Statement
+                transactions={report?.recent_transactions ?? []}
+                meta={meta}
+                isLoading={isLoading}
+                isError={isError}
+                page={page}
+                limit={limit}
+                onPageChange={setPage}
+                onLimitChange={handleLimitChange}
+            />
         </div>
+    )
+}
+
+export default function ProfitLossOverviewPage() {
+    return (
+        <>
+        <Suspense fallback={<div>Loading...</div>}>
+            <ProfitLossOverview />
+        </Suspense>
+        </>
     )
 }

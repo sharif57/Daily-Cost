@@ -1,65 +1,61 @@
 'use client'
 
-import React, { useState } from 'react'
+import { IncomeRecentTransaction } from '@/redux/feature/userSlice'
+import { useState } from 'react'
 
-interface Activity {
-  userId: string
-  transactionId: string
-  date: string
-  counterparty: string
-  category: string
-  amount: string
-  status: string
+interface GlobalActivitiesTableProps {
+  transactions: IncomeRecentTransaction[]
+  isLoading?: boolean
 }
 
-const activities: Activity[] = [
-  {
-    userId: '#00821',
-    transactionId: '#TRX-00821',
-    date: 'Oct 24,2024',
-    counterparty: 'Amazon Web Service',
-    category: 'Software',
-    amount: '-$12,450.00',
-    status: 'Completed',
-  },
-  {
-    userId: '#00858',
-    transactionId: '#TRX-00821',
-    date: 'Oct 24,2024',
-    counterparty: 'Outbound transfer to vendor LLC',
-    category: 'Software',
-    amount: '-$12,450.00',
-    status: 'Completed',
-  },
-  {
-    userId: '#00827',
-    transactionId: '#TRX-00821',
-    date: 'Oct 24,2024',
-    counterparty: 'Updated notification perferences',
-    category: 'Software',
-    amount: '-$12,450.00',
-    status: 'Completed',
-  },
-]
+const formatDate = (value: string) => {
+  return new Date(value).toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  })
+}
 
-export default function GlobalActivitiesTable() {
+const formatAmount = (value: string, type: string) => {
+  const amount = Number(value || 0)
+  const prefix = type === 'INCOME' ? '+' : '-'
+  return `${prefix}$${amount.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`
+}
+
+const toDisplayUserId = (userId: string) => `#${userId.slice(0, 8).toUpperCase()}`
+const toDisplayTransactionId = (id: string) => `#TRX-${id.slice(0, 8).toUpperCase()}`
+
+const toImageUrl = (path?: string) => {
+  if (!path) return ''
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+
+  const imageBaseUrl = (process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? '').replace(/\/$/, '')
+  if (!imageBaseUrl) return path
+
+  return path.startsWith('/') ? `${imageBaseUrl}${path}` : `${imageBaseUrl}/${path}`
+}
+
+export default function GlobalActivitiesTable({ transactions, isLoading }: GlobalActivitiesTableProps) {
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
 
-  const toggleSelect = (userId: string) => {
+  const toggleSelect = (rowId: string) => {
     const newSelected = new Set(selectedItems)
-    if (newSelected.has(userId)) {
-      newSelected.delete(userId)
+    if (newSelected.has(rowId)) {
+      newSelected.delete(rowId)
     } else {
-      newSelected.add(userId)
+      newSelected.add(rowId)
     }
     setSelectedItems(newSelected)
   }
 
   const toggleSelectAll = () => {
-    if (selectedItems.size === activities.length) {
+    if (selectedItems.size === transactions.length) {
       setSelectedItems(new Set())
     } else {
-      setSelectedItems(new Set(activities.map((a) => a.userId)))
+      setSelectedItems(new Set(transactions.map((t) => t.id)))
     }
   }
 
@@ -81,7 +77,7 @@ export default function GlobalActivitiesTable() {
               <th className="px-4 py-3 text-left">
                 <input
                   type="checkbox"
-                  checked={selectedItems.size === activities.length && activities.length > 0}
+                  checked={selectedItems.size === transactions.length && transactions.length > 0}
                   onChange={toggleSelectAll}
                   className="w-4 h-4 rounded border-border cursor-pointer"
                 />
@@ -96,7 +92,7 @@ export default function GlobalActivitiesTable() {
                 Date
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
-                Counterparty
+                Notes
               </th>
               <th className="px-4 py-3 text-left text-sm font-semibold text-foreground">
                 Category
@@ -110,40 +106,65 @@ export default function GlobalActivitiesTable() {
             </tr>
           </thead>
           <tbody>
-            {activities.map((activity, index) => (
+            {isLoading && (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  Loading recent transactions...
+                </td>
+              </tr>
+            )}
+
+            {!isLoading && transactions.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">
+                  No recent transactions available.
+                </td>
+              </tr>
+            )}
+
+            {!isLoading && transactions.map((activity) => (
               <tr
-                key={index}
+                key={activity.id}
                 className="border-b border-border hover:bg-secondary/50 transition-colors"
               >
                 <td className="px-4 py-3">
                   <input
                     type="checkbox"
-                    checked={selectedItems.has(activity.userId)}
-                    onChange={() => toggleSelect(activity.userId)}
+                    checked={selectedItems.has(activity.id)}
+                    onChange={() => toggleSelect(activity.id)}
                     className="w-4 h-4 rounded border-border cursor-pointer"
                   />
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-foreground">
-                  {activity.userId}
+                  {toDisplayUserId(activity.user_id)}
                 </td>
                 <td className="px-4 py-3 text-sm text-foreground">
-                  {activity.transactionId}
+                  {toDisplayTransactionId(activity.id)}
                 </td>
                 <td className="px-4 py-3 text-sm text-foreground">
-                  {activity.date}
+                  {formatDate(activity.date)}
                 </td>
                 <td className="px-4 py-3 text-sm text-foreground">
-                  {activity.counterparty}
+                  <div className="flex items-center gap-2">
+                    {activity.image ? (
+                      <img
+                        src={toImageUrl(activity.image)}
+                        alt={activity.category}
+                        className="w-6 h-6 rounded object-cover"
+                      />
+                    ) : null}
+                    <span>{activity.notes || 'N/A'}</span>
+                  </div>
                 </td>
                 <td className="px-4 py-3 text-sm text-foreground">
                   {activity.category}
                 </td>
-                <td className="px-4 py-3 text-sm font-medium text-red-600">
-                  {activity.amount}
+                <td className={`px-4 py-3 text-sm font-medium ${activity.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatAmount(activity.amount, activity.type)}
                 </td>
                 <td className="px-4 py-3 text-sm">
-                  <span className="inline-flex items-center gap-1 text-green-600 font-medium">
-                    • {activity.status}
+                  <span className={`inline-flex items-center gap-1 font-medium ${activity.type === 'INCOME' ? 'text-green-600' : 'text-red-600'}`}>
+                    • {activity.type}
                   </span>
                 </td>
               </tr>

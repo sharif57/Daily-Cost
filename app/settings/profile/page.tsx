@@ -1,8 +1,6 @@
 
 import Sidebar from '@/components/dashboard/sidebar'
 import Header from '@/components/dashboard/header'
-import RemindersContent from '@/components/reminder/reminder-content'
-import PlatformPage from '@/components/platform/platform-page'
 import Profile from '@/components/profile-page'
 
 export default function ProfileSettings() {

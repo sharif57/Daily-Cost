@@ -90,6 +90,100 @@ export interface IncomeReportResponse {
   data: IncomeReportData;
 }
 
+export interface ExpenseGrowthVsPreviousMonth {
+  percentage: number;
+  expense: number;
+}
+
+export interface ExpenseReportData {
+  total_expense: number;
+  average_monthly_expense: number;
+  growth_vs_previous_month: ExpenseGrowthVsPreviousMonth;
+  recent_transactions: IncomeRecentTransaction[];
+  meta: UsersMeta;
+}
+
+export interface ExpenseReportResponse {
+  success: boolean;
+  message: string;
+  meta: UsersMeta;
+  data: ExpenseReportData;
+}
+
+export interface UserIncomeOverviewQueryParams {
+  id: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface UserExpenseOverviewQueryParams {
+  id: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface GlobalOverviewUser {
+  name: string;
+  email: string;
+  image: string;
+}
+
+export interface GlobalMonthlyData {
+  month: number;
+  income: number;
+  expense: number;
+}
+
+export interface GlobalFinancialOverviewData {
+  user: GlobalOverviewUser;
+  total_revenue: number;
+  total_expense: number;
+  total_income: number;
+  zakat_expense: number;
+  monthly_data: GlobalMonthlyData[];
+  recent_transactions: IncomeRecentTransaction[];
+}
+
+export interface GlobalFinancialOverviewResponse {
+  success: boolean;
+  message: string;
+  data: GlobalFinancialOverviewData;
+}
+
+export interface ProfitLossYearlyMonthlyData {
+  month: number;
+  income: number;
+  expense: number;
+}
+
+export interface ProfitLossCategoryWiseExpense {
+  [key: string]: number;
+}
+
+export interface ProfitLossReportData {
+  total_revenue: number;
+  total_expense: number;
+  total_income: number;
+  net_profit_percentage: number;
+  yearly_monthly_data: ProfitLossYearlyMonthlyData[];
+  category_wise_expense: ProfitLossCategoryWiseExpense;
+  recent_transactions: IncomeRecentTransaction[];
+  meta: UsersMeta;
+}
+
+export interface ProfitLossReportResponse {
+  success: boolean;
+  message: string;
+  meta: UsersMeta;
+  data: ProfitLossReportData;
+}
+
+export interface ProfitLossQueryParams {
+  id: string;
+  page?: number;
+  limit?: number;
+}
+
 export const userApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     userProfile: builder.query({
@@ -145,7 +239,55 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    // /transaction/income/0291deea-2589-4584-8493-c9666638bb5a?page=1&limit=10
+    userIncomeOverview: builder.query<IncomeReportResponse, UserIncomeOverviewQueryParams>({
+      query: ({ id, page = 1, limit = 10 }) => ({
+        url: `/transaction/income/${id}`,
+        method: "GET",
+        params: {
+          page,
+          limit,
+        },
+      }),
+      providesTags: ["User"],
+    }),
+
+    // >>/transaction/overview/0291deea-2589-4584-8493-c9666638bb5a
+    globalTransactionOverview: builder.query<GlobalFinancialOverviewResponse, string>({
+      query: (id) => ({
+        url: `/transaction/overview/${id}`,
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
+
+    // /transaction/expense/0291deea-2589-4584-8493-c9666638bb5a?page=1&limit=10
+    userExpenseOverview: builder.query<ExpenseReportResponse, UserExpenseOverviewQueryParams>({
+      query: ({ id, page = 1, limit = 10 }) => ({
+        url: `/transaction/expense/${id}`,
+        method: "GET",
+        params: {
+          page,
+          limit,
+        },
+      }),
+      providesTags: ["User"],
+    }),
+
+    // /transaction/profit-loss/0291deea-2589-4584-8493-c9666638bb5a?page=1&limit=10
+    profitLoss: builder.query<ProfitLossReportResponse, ProfitLossQueryParams>({
+      query: ({ id, page = 1, limit = 10 }) => ({
+        url: `/transaction/profit-loss/${id}`,
+        method: "GET",
+        params: {
+          page,
+          limit,
+        },
+      }),
+      providesTags: ["User"],
+    }),
+
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery } = userApi;

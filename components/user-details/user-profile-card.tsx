@@ -149,12 +149,36 @@ const userId = params.id
           </Button>
         </Link>
 
-        <Link href={`/users/${userId}/activity-logs`} className="block">
+        <Link href={`/finance/income?userId=${userId}`} className="block">
           <Button
             variant="outline"
             className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
           >
-            View Activity Logs
+            Income Overview
+          </Button>
+        </Link>
+        <Link href={`/finance/dashboard?userId=${userId}`} className="block">
+          <Button
+            variant="outline"
+            className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
+          >
+            Global Financial Dashboard
+          </Button>
+        </Link>
+        <Link href={`/finance/expenses?userId=${userId}`} className="block">
+          <Button
+            variant="outline"
+            className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
+          >
+            Expense Overview
+          </Button>
+        </Link>
+        <Link href={`/finance/profit-loss?userId=${userId}`} className="block">
+          <Button
+            variant="outline"
+            className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
+          >
+            Profit & Loss Overview
           </Button>
         </Link>
 

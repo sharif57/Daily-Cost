@@ -1,5 +1,6 @@
 'use client'
 
+import { GlobalMonthlyData } from '@/redux/feature/userSlice'
 import {
   AreaChart,
   Area,
@@ -11,22 +12,24 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 
-const data = [
-  { month: 'Jan', Revenue: 100000, Expenses: 800000 },
-  { month: 'Feb', Revenue: 1280000, Expenses: 850000 },   // up, up
-  { month: 'Mar', Revenue: 1230000, Expenses: 830000 },   // down, down
-  { month: 'Apr', Revenue: 1350000, Expenses: 870000 },   // up, up
-  { month: 'May', Revenue: 1300000, Expenses: 900000 },   // down, up
-  { month: 'Jun', Revenue: 1400000, Expenses: 880000 },   // up, down
-  { month: 'Jul', Revenue: 1380000, Expenses: 910000 },   // down, up
-  { month: 'Aug', Revenue: 1450000, Expenses: 890000 },   // up, down
-  { month: 'Sep', Revenue: 1420000, Expenses: 930000 },   // down, up
-  { month: 'Oct', Revenue: 1500000, Expenses: 920000 },   // up, down
-  { month: 'Nov', Revenue: 1480000, Expenses: 950000 },   // down, up
-  { month: 'Dec', Revenue: 1550000, Expenses: 940000 },   // up, down
-]
+interface GlobalRevenueChartProps {
+  data: GlobalMonthlyData[]
+  isLoading?: boolean
+}
 
-export default function GlobalRevenueChart() {
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+export default function GlobalRevenueChart({ data, isLoading }: GlobalRevenueChartProps) {
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading monthly overview...</p>
+  }
+
+  const chartData = data.map((item) => ({
+    month: monthNames[item.month - 1] ?? `M${item.month}`,
+    Revenue: item.income,
+    Expenses: item.expense,
+  }))
+
   return (
     <div className="bg-card rounded-lg border border-border p-6">
       <div className="mb-6">
@@ -39,7 +42,7 @@ export default function GlobalRevenueChart() {
       </div>
 
       <ResponsiveContainer width="100%" height={350}>
-        <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ADFFDF" stopOpacity={0.8} />
@@ -63,7 +66,7 @@ export default function GlobalRevenueChart() {
               border: '1px solid #e5e7eb',
               borderRadius: '0.5rem',
             }}
-            formatter={(value) => `$${(value / 1000000).toFixed(1)}M`}
+            formatter={(value) => `$${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`}
           />
           <Legend wrapperStyle={{ paddingTop: '20px' }} />
           <Area

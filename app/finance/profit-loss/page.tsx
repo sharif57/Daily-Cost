@@ -3,6 +3,7 @@ import Header from '@/components/dashboard/header'
 import ProfitLossOverview from '@/components/finance/profit-loss'
 
 export default function ProfitLoss() {
+ 
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />

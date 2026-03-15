@@ -1,3 +1,4 @@
+'use client';
 import Sidebar from '@/components/dashboard/sidebar'
 import Header from '@/components/dashboard/header'
 import ExpenseOverview from '@/components/finance/expense'

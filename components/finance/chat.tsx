@@ -2,13 +2,28 @@
 
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 
-const data = [
-  { name: 'Operational', value: 60, color: '#D7C038' },
-  { name: 'Zakat', value: 25, color: '#BD47FB' },
-  { name: 'Other', value: 15, color: '#30E0A1' },
-];
+interface ExpenseAllocationChartProps {
+  categoryWiseExpense: Record<string, number>
+  totalExpense: number
+  isLoading?: boolean
+}
 
-export function ExpenseAllocationChart() {
+const COLORS = ['#D7C038', '#BD47FB', '#30E0A1', '#4F46E5', '#F59E42', '#14B8A6']
+
+export function ExpenseAllocationChart({ categoryWiseExpense, totalExpense, isLoading }: ExpenseAllocationChartProps) {
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading expense allocation...</p>
+  }
+
+  const entries = Object.entries(categoryWiseExpense)
+  const data = entries.length
+    ? entries.map(([name, value], index) => ({
+      name,
+      value,
+      color: COLORS[index % COLORS.length],
+    }))
+    : [{ name: 'No Expenses', value: 100, color: '#E5E7EB' }]
+
   return (
     <div className="rounded-xl border border-border bg-white p-6 ">
       <h2 className="text-lg font-medium text-black">Expense Allocation</h2>
@@ -34,7 +49,7 @@ export function ExpenseAllocationChart() {
           </PieChart>
         </ResponsiveContainer>
         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
-          <span className="text-2xl font-bold text-black">$420k</span>
+          <span className="text-2xl font-bold text-black">${totalExpense.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
           <span className="text-gray-400 text-sm">Total</span>
         </div>
       </div>
@@ -48,7 +63,9 @@ export function ExpenseAllocationChart() {
               />
               <span className="text-sm text-black">{item.name}</span>
             </div>
-            <span className="text-sm text-black font-semibold">{item.value}%</span>
+            <span className="text-sm text-black font-semibold">
+              {entries.length ? `${((item.value / Math.max(totalExpense, 1)) * 100).toFixed(1)}%` : '0%'}
+            </span>
           </div>
         ))}
       </div>

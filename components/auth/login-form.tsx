@@ -1,12 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
+import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { useLoginMutation } from '@/redux/feature/authSlice'
 import { toast } from 'sonner'
-import { saveTokens } from '@/service/authService'
+import { useRouter } from 'next/navigation'
+import { getTokenExpiryMs } from '@/lib/jwt'
+import AuthLogo from '../icon/authLogo'
 
 export default function LoginForm() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('abdul@gmail.com')
   const [password, setPassword] = useState('12345678')
@@ -28,14 +32,19 @@ export default function LoginForm() {
       console.log('Login attempt:', { email, password })
 
       const response = await login({ email, password }).unwrap()
+      const accessToken = response?.data?.access_token || ''
+      const expiryMs = getTokenExpiryMs(accessToken)
+      const maxAgeInSeconds = expiryMs
+        ? Math.max(0, Math.floor((expiryMs - Date.now()) / 1000))
+        : 0
 
       toast.success(response?.message || 'Login successful! Redirecting to dashboard...')
-      localStorage.setItem('accessToken', response?.data?.access_token || '')
-      await saveTokens(response?.data?.access_token || '')
-      // On success, redirect to dashboard
+      localStorage.setItem('accessToken', accessToken)
+      document.cookie = `token=${accessToken}; path=/; max-age=${maxAgeInSeconds}; samesite=lax`
       window.location.href = '/'
-    } catch (error : any) {
-      toast.error( error?.data?.message || 'Invalid email or password. Please try again.')
+      router.refresh()
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Invalid email or password. Please try again.')
     } finally {
     }
   }
@@ -46,9 +55,7 @@ export default function LoginForm() {
       <div className="bg-white rounded-2xl shadow-lg p-8 sm:p-12">
         {/* Logo */}
         <div className="flex justify-center mb-8">
-          <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-amber-600 rounded-lg flex items-center justify-center shadow-md">
-            <span className="text-2xl font-bold text-blue-900">B</span>
-          </div>
+          <AuthLogo />
         </div>
 
         {/* Heading */}
@@ -101,12 +108,12 @@ export default function LoginForm() {
 
           {/* Forgot Password Link */}
           <div className="text-right">
-            <a
-              href="#"
+            <Link
+              href="/forgot-password"
               className="text-gray-900 font-semibold text-sm sm:text-base hover:text-blue-900 transition-colors"
             >
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           {/* Sign In Button */}

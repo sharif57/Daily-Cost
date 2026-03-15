@@ -1,5 +1,6 @@
 'use client'
 
+import { ProfitLossYearlyMonthlyData } from '@/redux/feature/userSlice'
 import {
   AreaChart,
   Area,
@@ -10,22 +11,26 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 
-const data = [
-  { month: 'Jan', Revenue: 85000, Expenses: 45000 },
-  { month: 'Feb', Revenue: 92000, Expenses: 48000 },
-  { month: 'Mar', Revenue: 88000, Expenses: 52000 },
-  { month: 'Apr', Revenue: 105000, Expenses: 58000 },
-  { month: 'May', Revenue: 118000, Expenses: 62000 },
-  { month: 'Jun', Revenue: 115000, Expenses: 60000 },
-  { month: 'Jul', Revenue: 125000, Expenses: 65000 },
-  { month: 'Aug', Revenue: 130000, Expenses: 68000 },
-  { month: 'Sep', Revenue: 128000, Expenses: 6000 },
-  { month: 'Oct', Revenue: 135000, Expenses: 70000 },
-  { month: 'Nov', Revenue: 140000, Expenses: 72000 },
-  { month: 'Dec', Revenue: 145000, Expenses: 75000 },
-]
+interface RevenueChartProps {
+  title?: string | null
+  description?: string | null
+  data?: ProfitLossYearlyMonthlyData[]
+  isLoading?: boolean
+}
 
-export default function RevenueChart({title, description}: {title?: string | null, description?: string | null}) {
+const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+export default function RevenueChart({ title, description, data = [], isLoading }: RevenueChartProps) {
+  if (isLoading) {
+    return <p className="text-sm text-muted-foreground">Loading chart data...</p>
+  }
+
+  const chartData = data.map((item) => ({
+    month: monthNames[item.month - 1] ?? `M${item.month}`,
+    Revenue: item.income,
+    Expenses: item.expense,
+  }))
+
   return (
     <div className="bg-white rounded-lg p-6 border border-border shadow-sm">
       <div className="mb-6">
@@ -37,7 +42,7 @@ export default function RevenueChart({title, description}: {title?: string | nul
 
       <ResponsiveContainer width="100%" height={300}>
         <AreaChart
-          data={data}
+          data={chartData}
           margin={{
             top: 20,
             right: 0,
@@ -58,7 +63,7 @@ export default function RevenueChart({title, description}: {title?: string | nul
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
           <YAxis />
-          <Tooltip />
+          <Tooltip formatter={(value) => `$${Number(value).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
           <Area
             type="monotone"
             dataKey="Revenue"

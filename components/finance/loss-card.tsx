@@ -1,32 +1,54 @@
 'use client'
 
-import { TrendingUp, TrendingDown, CheckCircle } from 'lucide-react'
+import { ProfitLossReportData } from '@/redux/feature/userSlice'
+import { TrendingDown, TrendingUp } from 'lucide-react'
 
-export default function LossCard() {
+interface LossCardProps {
+    report?: ProfitLossReportData
+    isLoading?: boolean
+    isError?: boolean
+}
+
+const formatCurrency = (value?: number): string => {
+    return `$${(value ?? 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`
+}
+
+export default function LossCard({ report, isLoading, isError }: LossCardProps) {
+
+    if (isLoading) {
+        return <p className="text-sm text-muted-foreground">Loading profit and loss summary...</p>
+    }
+
+    if (isError) {
+        return <p className="text-sm text-red-600">Failed to load profit and loss summary.</p>
+    }
+
+    const netProfitPercentage = report?.net_profit_percentage ?? 0
+
     const cards = [
         {
             label: 'Total Revenue',
-            value: '$1,250,000',
-            trend: '+12%',
+            value: formatCurrency(report?.total_revenue),
+            trend: `${report?.recent_transactions?.length ?? 0} transactions`,
             direction: 'up',
-            period: 'vs last period',
-            badge: false,
+            period: 'Revenue recognized',
         },
         {
             label: 'Total Expenses ',
-            value: '$840,000',
+            value: formatCurrency(report?.total_expense),
             trend: '',
             direction: '',
-            period: 'vs last period',
-            badge: false,
+            period: 'Outgoing amount',
         },
         {
             label: 'Net Profit',
-            value: '$410,000',
-            trend: '2.4%',
-            direction: 'up',
-            period: 'Profit Margin:32%',
-            badge: false,
+            value: formatCurrency(report?.total_income),
+            trend: `${netProfitPercentage.toFixed(2)}%`,
+            direction: netProfitPercentage >= 0 ? 'up' : 'down',
+            period: 'Net profit percentage',
         },
 
     ]
@@ -45,29 +67,22 @@ export default function LossCard() {
                         {card.value}
                     </p>
                     <div className="flex items-center gap-2">
-                        {card.badge ? (
-                            <div className="flex items-center gap-1.5 text-green-600">
-                                <CheckCircle className="w-4 h-4" />
-                                <span className="text-sm font-medium">{card.trend}</span>
-                            </div>
-                        ) : (
-                            <>
-                                {card.direction === 'up' ? (
-                                    <TrendingUp className="w-4 h-4 text-green-600" />
-                                ) : (
-                                    <TrendingDown className="w-4 h-4 text-red-600" />
-                                )}
-                                <span
-                                    className={`text-sm font-medium ${card.direction === 'up' ? 'text-green-600' : 'text-red-600'
-                                        }`}
-                                >
-                                    {card.trend}
-                                </span>
-                                <span className="text-xs text-muted-foreground ml-1">
-                                    {card.period}
-                                </span>
-                            </>
-                        )}
+                        {card.direction === 'up' ? (
+                            <TrendingUp className="w-4 h-4 text-green-600" />
+                        ) : card.direction === 'down' ? (
+                            <TrendingDown className="w-4 h-4 text-red-600" />
+                        ) : null}
+                        {card.trend ? (
+                            <span
+                                className={`text-sm font-medium ${card.direction === 'up' ? 'text-green-600' : 'text-red-600'
+                                    }`}
+                            >
+                                {card.trend}
+                            </span>
+                        ) : null}
+                        <span className="text-xs text-muted-foreground ml-1">
+                            {card.period}
+                        </span>
                     </div>
                 </div>
             ))}

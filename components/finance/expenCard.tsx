@@ -1,32 +1,54 @@
 'use client'
 
-import { TrendingUp, TrendingDown, CheckCircle } from 'lucide-react'
+import { ExpenseReportData } from '@/redux/feature/userSlice'
+import { TrendingDown, TrendingUp } from 'lucide-react'
 
-export default function ExpenseCard() {
+interface ExpenseCardProps {
+    report?: ExpenseReportData
+    isLoading?: boolean
+    isError?: boolean
+}
+
+const formatCurrency = (value?: number): string => {
+    return `$${(value ?? 0).toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })}`
+}
+
+export default function ExpenseCard({ report, isLoading, isError }: ExpenseCardProps) {
+    if (isLoading) {
+        return <p className="text-sm text-muted-foreground">Loading expense summary...</p>
+    }
+
+    if (isError) {
+        return <p className="text-sm text-red-600">Failed to load expense summary.</p>
+    }
+
+    const growthPercent = report?.growth_vs_previous_month?.percentage ?? 0
+    const growthExpense = report?.growth_vs_previous_month?.expense ?? 0
+
     const cards = [
         {
             label: 'Total Expenses',
-            value: '$1,250,000',
-            trend: '+12%',
-            direction: 'up',
-            period: 'vs last period',
-            badge: false,
+            value: formatCurrency(report?.total_expense),
+            trend: `${growthPercent >= 0 ? '+' : ''}${growthPercent.toFixed(2)}%`,
+            direction: growthPercent >= 0 ? 'up' : 'down',
+            period: 'vs previous month',
         },
         {
             label: 'Monthly Average',
-            value: '$840,000',
+            value: formatCurrency(report?.average_monthly_expense),
             trend: '',
             direction: '',
-            period: 'Calculated over last 3 months',
-            badge: false,
+            period: 'Calculated over all available months',
         },
         {
-            label: 'Expense Change (1%)',
-            value: 'Reduced',
-            trend: '2.4%',
-            direction: 'up',
-            period: 'Decrease in platform fees this month',
-            badge: false,
+            label: 'Growth Expense Amount',
+            value: formatCurrency(growthExpense),
+            trend: `${growthPercent >= 0 ? '+' : ''}${growthPercent.toFixed(2)}%`,
+            direction: growthPercent >= 0 ? 'up' : 'down',
+            period: 'Compared with previous month',
         },
 
     ]
@@ -45,29 +67,24 @@ export default function ExpenseCard() {
                         {card.value}
                     </p>
                     <div className="flex items-center gap-2">
-                        {card.badge ? (
-                            <div className="flex items-center gap-1.5 text-green-600">
-                                <CheckCircle className="w-4 h-4" />
-                                <span className="text-sm font-medium">{card.trend}</span>
-                            </div>
-                        ) : (
-                            <>
-                                {card.direction === 'up' ? (
-                                    <TrendingUp className="w-4 h-4 text-green-600" />
-                                ) : (
-                                    <TrendingDown className="w-4 h-4 text-red-600" />
-                                )}
-                                <span
-                                    className={`text-sm font-medium ${card.direction === 'up' ? 'text-green-600' : 'text-red-600'
-                                        }`}
-                                >
-                                    {card.trend}
-                                </span>
-                                <span className="text-xs text-muted-foreground ml-1">
-                                    {card.period}
-                                </span>
-                            </>
-                        )}
+                        {card.direction === 'up' ? (
+                            <TrendingUp className="w-4 h-4 text-green-600" />
+                        ) : card.direction === 'down' ? (
+                            <TrendingDown className="w-4 h-4 text-red-600" />
+                        ) : null}
+
+                        {card.trend ? (
+                            <span
+                                className={`text-sm font-medium ${card.direction === 'up' ? 'text-green-600' : 'text-red-600'
+                                    }`}
+                            >
+                                {card.trend}
+                            </span>
+                        ) : null}
+
+                        <span className="text-xs text-muted-foreground ml-1">
+                            {card.period}
+                        </span>
                     </div>
                 </div>
             ))}
