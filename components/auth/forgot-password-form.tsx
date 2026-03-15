@@ -5,8 +5,10 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { useForgotPasswordMutation } from '@/redux/feature/authSlice'
 import AuthLogo from '../icon/authLogo'
+import { useRouter } from 'next/navigation'
 
 export default function ForgotPasswordForm() {
+    const router = useRouter()
     const [email, setEmail] = useState('')
     const [forgotPassword, { isLoading }] = useForgotPasswordMutation()
 
@@ -14,9 +16,10 @@ export default function ForgotPasswordForm() {
         e.preventDefault()
 
         try {
-            const response = await forgotPassword({ email }).unwrap()
+            const normalizedEmail = email.trim().toLowerCase()
+            const response = await forgotPassword({ email: normalizedEmail }).unwrap()
             toast.success(response?.message || 'OTP sent successfully. Please check your email.')
-            setEmail('')
+            router.push(`/verify-otp?email=${encodeURIComponent(normalizedEmail)}`)
         } catch (error: any) {
             toast.error(error?.data?.message || 'Failed to send reset code. Please try again.')
         }

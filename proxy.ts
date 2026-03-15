@@ -28,7 +28,11 @@ export function proxy(request: any) {
   const token = request.cookies.get("token")?.value;
   const expired = isTokenExpired(token);
 
-  const isPublicAuthRoute = pathname === "/login" || pathname === "/forgot-password";
+  const isPublicAuthRoute =
+    pathname === "/login" ||
+    pathname === "/forgot-password" ||
+    pathname === "/verify-otp" ||
+    pathname === "/reset-password";
 
   if (isPublicAuthRoute) {
     if (token && !expired) {
