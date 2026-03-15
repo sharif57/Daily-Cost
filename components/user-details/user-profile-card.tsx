@@ -182,7 +182,7 @@ const userId = params.id
           </Button>
         </Link>
 
-        <Button
+        {/* <Button
           variant="outline"
           className="w-full bg-transparent border border-[#090A58] hover:bg-transparent/90 hover:text-[#090A58]  rounded-full text-black text-[16px] font-medium p-6"
         >
@@ -196,7 +196,7 @@ const userId = params.id
         >
           <Suspend />
           Suspend User
-        </Button>
+        </Button> */}
       </div>
     </div>
   )

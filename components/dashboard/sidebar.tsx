@@ -144,9 +144,9 @@ export default function Sidebar() {
   return (
     <aside className="hidden md:flex w-60 bg-[#090A58] text-sidebar-foreground flex-col">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-sidebar-border">
+      <Link href="/" className="px-6 py-6 border-b border-sidebar-border">
         <Logo />
-      </div>
+      </Link>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">

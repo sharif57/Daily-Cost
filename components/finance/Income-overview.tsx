@@ -50,9 +50,9 @@ import { Suspense, useMemo, useState } from 'react'
                         <Download className="w-4 h-4 mr-2" />
                         Export Report
                     </Button>
-                    <Button className="bg-[#090A58] rounded-full hover:bg-sidebar/90 text-white">
+                    {/* <Button className="bg-[#090A58] rounded-full hover:bg-sidebar/90 text-white">
                         + Add Funds
-                    </Button>
+                    </Button> */}
                 </div>
             </div>
 

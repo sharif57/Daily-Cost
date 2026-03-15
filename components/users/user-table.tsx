@@ -38,6 +38,9 @@ export default function UserTable({
   users,
   isLoading,
 }: UserTableProps) {
+
+  const IMAGE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ''
+
   return (
     <div className="overflow-x-auto border border-border rounded-lg">
       <table className="w-full">
@@ -102,7 +105,7 @@ export default function UserTable({
                   <div className="flex items-center gap-3 cursor-pointer">
                     {user.image ? (
                       <img
-                        src={user.image}
+                        src={IMAGE + user.image}
                         alt={user.name}
                         className="w-10 h-10 rounded-full object-cover"
                       />
