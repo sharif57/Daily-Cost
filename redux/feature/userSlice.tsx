@@ -136,18 +136,19 @@ export interface GlobalMonthlyData {
 }
 
 export interface GlobalFinancialOverviewData {
-  user: GlobalOverviewUser;
   total_revenue: number;
   total_expense: number;
   total_income: number;
   zakat_expense: number;
   monthly_data: GlobalMonthlyData[];
   recent_transactions: IncomeRecentTransaction[];
+  meta?: UsersMeta;
 }
 
 export interface GlobalFinancialOverviewResponse {
   success: boolean;
   message: string;
+  meta?: UsersMeta;
   data: GlobalFinancialOverviewData;
 }
 
@@ -315,7 +316,16 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
+    // /transaction/global-finance-overview
+    globalTransactionDashboard: builder.query<GlobalFinancialOverviewResponse, void>({
+      query: () => ({
+        url: `/transaction/global-finance-overview`,
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
+
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation , useApproveGuestMutation, useRejectGuestMutation } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery } = userApi;

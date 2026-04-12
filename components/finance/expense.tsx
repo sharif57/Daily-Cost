@@ -7,14 +7,15 @@ import RecentExpenseTable from './recent-expense'
 import { useUserExpenseOverviewQuery } from '@/redux/feature/userSlice'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useMemo, useState } from 'react'
+import GlobalRevenueChart from './global-revenue-chart'
 
- function ExpenseOverview() {
+function ExpenseOverview() {
     const searchParams = useSearchParams()
     const [page, setPage] = useState(1)
     const [limit, setLimit] = useState(10)
 
     const queryUserId = searchParams.get('userId')
-    
+
 
     const { data, isLoading, isError } = useUserExpenseOverviewQuery(
         { id: queryUserId as string, page, limit },)
@@ -60,8 +61,8 @@ import { Suspense, useMemo, useState } from 'react'
             )}
 
             {/* expense Cards */}
-            <ExpenseCard report={report} isLoading={isLoading} isError={isError} />
-
+            {/* <ExpenseCard report={report} isLoading={isLoading} isError={isError} /> */}
+            {/* <GlobalRevenueChart data={report?.monthly_overview ?? []} isLoading={isLoading} /> */}
 
             {/* Recent Activities */}
             <RecentExpenseTable
@@ -81,9 +82,9 @@ import { Suspense, useMemo, useState } from 'react'
 export default function ExpenseOverviewPage() {
     return (
         <>
-        <Suspense fallback={<div>Loading...</div>}>
-            <ExpenseOverview />
-        </Suspense>
+            <Suspense fallback={<div>Loading...</div>}>
+                <ExpenseOverview />
+            </Suspense>
         </>
     )
 }
