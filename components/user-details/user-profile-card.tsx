@@ -3,14 +3,10 @@
 import Link from 'next/link'
 import { Mail, Phone, CreditCard as IdentityCard, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import Reset from '../icon/reset'
-import Suspend from '../icon/suspend'
-import { useSingleUserQuery } from '@/redux/feature/userSlice'
+import { useSingleUserQuery, useUpdateDocumentMutation } from '@/redux/feature/userSlice'
 import { useParams } from 'next/navigation'
-
-interface UserProfileCardProps {
-  userId: string
-}
+import { useState } from 'react'
+import { toast } from 'sonner'
 
 const getInitials = (name?: string): string => {
   if (!name) return 'U'
@@ -32,19 +28,58 @@ const formatDate = (value?: string): string => {
 }
 
 export default function UserProfileCard() {
-const params = useParams()
-const userId = params.id
+  const params = useParams()
+  const userId = typeof params.id === 'string' ? params.id : params.id?.[0] ?? ''
+  const [isDocumentModalOpen, setIsDocumentModalOpen] = useState(false)
+  const [selectedDocument, setSelectedDocument] = useState<File | null>(null)
 
-  const { data, isLoading, isError } = useSingleUserQuery(userId as string)
+  const { data, isLoading, isError } = useSingleUserQuery(userId)
   const user = data?.data
-
+  const [updateDocument, { isLoading: isUpdatingDocument }] = useUpdateDocumentMutation()
 
   const IMAGE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL
+  const API_BASE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL ?? ''
   const profileImage = user?.image
     ? user.image.startsWith('http')
       ? user.image
       : `${IMAGE ?? ''}${user.image}`
     : ''
+
+  const documentPath = user?.document ?? ''
+  const documentUrl = documentPath
+    ? documentPath.startsWith('http')
+      ? documentPath
+      : `${API_BASE}${documentPath}`
+    : ''
+  const isPdfDocument = documentPath.toLowerCase().endsWith('.pdf')
+
+  const handleDocumentFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    setSelectedDocument(file)
+  }
+
+  const handleDocumentUpdate = async () => {
+    if (!selectedDocument || !userId) {
+      toast.error('Please select a document file first.')
+      return
+    }
+
+    try {
+      const formData = new FormData()
+      formData.append('document', selectedDocument)
+
+      await updateDocument({
+        id: userId,
+        document: formData,
+      }).unwrap()
+
+      toast.success('Document updated successfully.')
+      setIsDocumentModalOpen(false)
+      setSelectedDocument(null)
+    } catch (error: any) {
+      toast.error(error?.data?.message || 'Failed to update document. Please try again.')
+    }
+  }
 
 
   return (
@@ -135,6 +170,36 @@ const userId = params.id
               </p>
             </div>
           </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-foreground">Current Document</p>
+            {documentPath ? (
+              <>
+                <p className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground break-all">
+                  <span className="font-semibold text-foreground">document:</span> {documentPath}
+                </p>
+                <a
+                  href={documentUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-block text-sm font-medium text-[#090A58] hover:underline"
+                >
+                  View current document
+                </a>
+
+                {/* {isPdfDocument && (
+                      <div className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
+                        <iframe
+                          src={documentUrl}
+                          title="Current document preview"
+                          className="h-56 w-full"
+                        />
+                      </div>
+                    )} */}
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">No document uploaded yet.</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -149,7 +214,7 @@ const userId = params.id
           </Button>
         </Link>
 
-        <Link href={`/finance/income?userId=${userId}`} className="block">
+        {/* <Link href={`/finance/income?userId=${userId}`} className="block">
           <Button
             variant="outline"
             className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
@@ -172,7 +237,7 @@ const userId = params.id
           >
             Expense Overview
           </Button>
-        </Link>
+        </Link> */}
         <Link href={`/finance/profit-loss?userId=${userId}`} className="block">
           <Button
             variant="outline"
@@ -181,6 +246,18 @@ const userId = params.id
             Profit & Loss Overview
           </Button>
         </Link>
+        <button
+          type="button"
+          onClick={() => setIsDocumentModalOpen(true)}
+          className="block w-full"
+        >
+          <Button
+            variant="outline"
+            className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
+          >
+            Update Document
+          </Button>
+        </button>
 
         {/* <Button
           variant="outline"
@@ -198,6 +275,108 @@ const userId = params.id
           Suspend User
         </Button> */}
       </div>
+
+      {isDocumentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => {
+              if (!isUpdatingDocument) {
+                setIsDocumentModalOpen(false)
+                setSelectedDocument(null)
+              }
+            }}
+          />
+
+          <div className="relative z-10 w-full max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-lg">
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="text-xl font-semibold text-foreground">Update Document</h3>
+              <button
+                type="button"
+                className="text-sm text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  if (!isUpdatingDocument) {
+                    setIsDocumentModalOpen(false)
+                    setSelectedDocument(null)
+                  }
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-foreground">Choose New Document</p>
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  onChange={handleDocumentFileChange}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground"
+                />
+                {selectedDocument && (
+                  <p className="text-xs text-muted-foreground break-all">
+                    Selected: {selectedDocument.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-foreground">Current Document</p>
+                {documentPath ? (
+                  <>
+                    <p className="rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground break-all">
+                      <span className="font-semibold text-foreground">document:</span> {documentPath}
+                    </p>
+                    <a
+                      href={documentUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block text-sm font-medium text-[#090A58] hover:underline"
+                    >
+                      View current document
+                    </a>
+
+                    {/* {isPdfDocument && (
+                      <div className="mt-2 overflow-hidden rounded-lg border border-border bg-background">
+                        <iframe
+                          src={documentUrl}
+                          title="Current document preview"
+                          className="h-56 w-full"
+                        />
+                      </div>
+                    )} */}
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No document uploaded yet.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  if (!isUpdatingDocument) {
+                    setIsDocumentModalOpen(false)
+                    setSelectedDocument(null)
+                  }
+                }}
+                className="rounded-full"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDocumentUpdate}
+                disabled={!selectedDocument || isUpdatingDocument}
+                className="rounded-full bg-[#090A58] text-white hover:bg-[#090A58]/90"
+              >
+                {isUpdatingDocument ? 'Updating...' : 'Update Document'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

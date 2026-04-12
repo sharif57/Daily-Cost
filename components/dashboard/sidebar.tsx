@@ -31,6 +31,12 @@ const menuItems = [
     href: '/users',
   },
   {
+    id: 'Guest List',
+    label: 'Guest List',
+    icon: Users,
+    href: '/config'
+  },
+  {
     id: 'finance',
     label: 'Finance',
     icon: Wallet,
@@ -38,8 +44,8 @@ const menuItems = [
     href: '/finance',
     children: [
       { id: 'global-dashboard', label: 'Global Financial Dashboard', href: '/users', activePath: '/finance/dashboard' },
-      { id: 'income-overview', label: 'Income Overview', href: '/users', activePath: '/finance/income' },
-      { id: 'expense-overview', label: 'Expense Overview', href: '/users', activePath: '/finance/expenses' },
+      // { id: 'income-overview', label: 'Income Overview', href: '/users', activePath: '/finance/income' },
+      // { id: 'expense-overview', label: 'Expense Overview', href: '/users', activePath: '/finance/expenses' },
       { id: 'profit-loss', label: 'Profit & Loss Summary', href: '/users', activePath: '/finance/profit-loss' },
     ],
   },
@@ -81,7 +87,7 @@ const menuItems = [
     href: '/settings',
     children: [
       { id: 'Admin Settings', label: 'Admin Settings', href: '/settings/platform' },
-      { id: 'Guest List', label: 'Guest List', href: '/settings/config' },
+      // { id: 'Guest List', label: 'Guest List', href: '/settings/config' },
       { id: 'Profile Settings', label: 'Profile Settings', href: '/settings/profile' },
     ]
   },

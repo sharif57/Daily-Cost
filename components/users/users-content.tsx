@@ -5,6 +5,7 @@ import { Download, Search } from 'lucide-react'
 import UserTable from './user-table'
 import { Button } from '@/components/ui/button'
 import { useAllUsersQuery } from '@/redux/feature/userSlice'
+import jsPDF from 'jspdf'
 
 export default function UsersContent() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -12,6 +13,7 @@ export default function UsersContent() {
   const [statusFilter, setStatusFilter] = useState('All Status')
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [isExporting, setIsExporting] = useState(false)
 
   const queryParams = useMemo(() => {
     const normalizedSearch = searchTerm.trim()
@@ -41,33 +43,92 @@ export default function UsersContent() {
   const totalPages = meta?.totalPage ?? 1
   const totalUsers = meta?.total ?? 0
 
-  const handleExportCsv = () => {
-    const header = ['ID', 'Name', 'Email', 'Phone', 'Role', 'Status', 'Verified', 'Gender', 'Created At']
-    const rows = users.map((user) => [
-      user.id,
-      user.name,
-      user.email,
-      user.phone ?? '',
-      user.role,
-      user.online ? 'Active' : 'Inactive',
-      user.is_verified ? 'Verified' : 'Unverified',
-      user.gender,
-      new Date(user.created_at).toLocaleString(),
-    ])
+  const handleExportUsersPdf = () => {
+    if (users.length === 0 || isExporting) {
+      return
+    }
 
-    const csv = [header, ...rows]
-      .map((line) => line.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n')
+    try {
+      setIsExporting(true)
+      const pdf = new jsPDF('p', 'mm', 'a4')
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 12
+      const contentWidth = pageWidth - margin * 2
+      const fileDate = new Date().toISOString().slice(0, 10)
 
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = window.URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'users-export.csv'
-    document.body.appendChild(link)
-    link.click()
-    link.remove()
-    window.URL.revokeObjectURL(url)
+      pdf.setTextColor(15, 23, 42)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(14)
+      pdf.text('Users Data', margin, 16)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(9)
+      pdf.text(`Page ${currentPage}`, pageWidth - margin - 18, 16)
+
+      let y = 24
+
+      const headerHeight = 8
+      const rowHeight = 7
+      const colX = {
+        name: margin + 3,
+        email: margin + 52,
+        role: margin + 120,
+        status: margin + 145,
+        verified: margin + 170,
+      }
+
+      const drawTableHeader = () => {
+        pdf.setFillColor(9, 10, 88)
+        pdf.rect(margin, y, contentWidth, headerHeight, 'F')
+        pdf.setTextColor(255, 255, 255)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(8)
+        pdf.text('Name', colX.name, y + 5.2)
+        pdf.text('Email', colX.email, y + 5.2)
+        pdf.text('Role', colX.role, y + 5.2)
+        pdf.text('Status', colX.status, y + 5.2)
+        pdf.text('Verified', colX.verified, y + 5.2)
+        y += headerHeight
+      }
+
+      drawTableHeader()
+
+      users.forEach((user, index) => {
+        if (y + rowHeight > pageHeight - 12) {
+          pdf.addPage()
+          y = 16
+          drawTableHeader()
+        }
+
+        const isEven = index % 2 === 0
+        pdf.setFillColor(isEven ? 248 : 255, isEven ? 250 : 255, isEven ? 252 : 255)
+        pdf.rect(margin, y, contentWidth, rowHeight, 'F')
+
+        pdf.setDrawColor(229, 231, 235)
+        pdf.line(margin, y + rowHeight, pageWidth - margin, y + rowHeight)
+
+        pdf.setTextColor(30, 41, 59)
+        pdf.setFont('helvetica', 'normal')
+        pdf.setFontSize(7.5)
+
+        const name = user.name.length > 24 ? `${user.name.slice(0, 24)}...` : user.name
+        const email = user.email.length > 35 ? `${user.email.slice(0, 35)}...` : user.email
+
+        pdf.text(name, colX.name, y + 4.7)
+        pdf.text(email, colX.email, y + 4.7)
+        pdf.text(user.role.toUpperCase(), colX.role, y + 4.7)
+        pdf.text(user.online ? 'Active' : 'Inactive', colX.status, y + 4.7)
+        pdf.text(user.is_verified ? 'Yes' : 'No', colX.verified, y + 4.7)
+
+        y += rowHeight
+      })
+
+      pdf.save(`users-page-${currentPage}-data-${fileDate}.pdf`)
+    } catch (error) {
+      console.error('Failed to export users report as PDF', error)
+    } finally {
+      setIsExporting(false)
+    }
   }
 
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
@@ -84,13 +145,13 @@ export default function UsersContent() {
         </div>
         {/* Export Button */}
         <Button
-          onClick={handleExportCsv}
-          disabled={users.length === 0}
+          onClick={handleExportUsersPdf}
+          disabled={users.length === 0 || isExporting}
           className="flex items-center gap-2  border border-[#090A58] bg-transparent text-[#090A58] hover:bg-[#F7F4FD1A] rounded-full px-6 py-2.5 whitespace-nowrap disabled:opacity-50"
         >
           <Download className="w-4 h-4" />
-          <span className="hidden sm:inline">Export CSV</span>
-          <span className="sm:hidden">Export</span>
+          <span className="hidden sm:inline">{isExporting ? 'Downloading PDF...' : 'Export Users PDF'}</span>
+          <span className="sm:hidden">{isExporting ? 'PDF...' : 'Export'}</span>
         </Button>
       </div>
 

@@ -19,6 +19,7 @@ export interface AppUser {
   online: boolean;
   is_deleted: boolean;
   is_verified: boolean;
+  document?: string;
   auth_is_reset_password: boolean;
   auth_one_time_code: string | number | null;
   auth_expire_at: string | null;
@@ -286,8 +287,35 @@ export const userApi = baseApi.injectEndpoints({
       }),
       providesTags: ["User"],
     }),
+    // user/add-document/a1430c05-3347-4b30-a832-bd5a9c809337
+    updateDocument: builder.mutation({
+      query: ({ id, document }) => ({
+        url: `/user/add-document/${id}`,
+        method: "PATCH",
+        body: document,
+        formData: true,
+      }),
+      invalidatesTags: ["User"],
+    }),
+    // /guest/approve/aa4e35b1-3a68-4ff2-9b90-d97a422c66a7
+    approveGuest: builder.mutation({
+      query: (id) => ({
+        url: `/guest/approve/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // guest/reject/e592cbbc-4cf7-4e5f-9cf3-facad9dbffa6
+    rejectGuest: builder.mutation({
+      query: (id) => ({
+        url: `/guest/reject/${id}`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["User"],
+    }),
 
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation , useApproveGuestMutation, useRejectGuestMutation } = userApi;
