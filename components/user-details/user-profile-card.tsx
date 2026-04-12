@@ -46,7 +46,8 @@ export default function UserProfileCard() {
     : ''
 
   const documentPath = user?.document ?? ''
-  const documentUrl = documentPath
+  const hasDocument = documentPath.trim().length > 0
+  const documentUrl = hasDocument
     ? documentPath.startsWith('http')
       ? documentPath
       : `${API_BASE}${documentPath}`
@@ -73,7 +74,7 @@ export default function UserProfileCard() {
         document: formData,
       }).unwrap()
 
-      toast.success('Document updated successfully.')
+      toast.success(hasDocument ? 'Document updated successfully.' : 'Document added successfully.')
       setIsDocumentModalOpen(false)
       setSelectedDocument(null)
     } catch (error: any) {
@@ -255,7 +256,7 @@ export default function UserProfileCard() {
             variant="outline"
             className="w-full bg-[#B68F24] hover:bg-[#B68F24] rounded-full text-white text-[16px] font-medium p-6"
           >
-            Update Document
+            {hasDocument ? 'Update Document' : 'Add Document'}
           </Button>
         </button>
 
@@ -290,7 +291,9 @@ export default function UserProfileCard() {
 
           <div className="relative z-10 w-full max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-lg">
             <div className="mb-6 flex items-center justify-between">
-              <h3 className="text-xl font-semibold text-foreground">Update Document</h3>
+              <h3 className="text-xl font-semibold text-foreground">
+                {hasDocument ? 'Update Document' : 'Add Document'}
+              </h3>
               <button
                 type="button"
                 className="text-sm text-muted-foreground hover:text-foreground"
@@ -307,7 +310,9 @@ export default function UserProfileCard() {
 
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div className="space-y-3">
-                <p className="text-sm font-medium text-foreground">Choose New Document</p>
+                <p className="text-sm font-medium text-foreground">
+                  {hasDocument ? 'Choose New Document' : 'Choose Document'}
+                </p>
                 <input
                   type="file"
                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
@@ -371,7 +376,13 @@ export default function UserProfileCard() {
                 disabled={!selectedDocument || isUpdatingDocument}
                 className="rounded-full bg-[#090A58] text-white hover:bg-[#090A58]/90"
               >
-                {isUpdatingDocument ? 'Updating...' : 'Update Document'}
+                {isUpdatingDocument
+                  ? hasDocument
+                    ? 'Updating...'
+                    : 'Adding...'
+                  : hasDocument
+                    ? 'Update Document'
+                    : 'Add Document'}
               </Button>
             </div>
           </div>
