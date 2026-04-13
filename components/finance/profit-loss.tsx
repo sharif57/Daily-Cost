@@ -16,7 +16,7 @@
 //     const [limit, setLimit] = useState(10)
 
 //     const queryUserId = searchParams.get('userId')
-    
+
 //     const userId = queryUserId  || ''
 
 //     const { data, isLoading, isError } = useProfitLossQuery(
@@ -123,26 +123,43 @@ import RevenueChart from '../financial/revenue-chart'
 import { ExpenseAllocationChart } from './chat'
 import Statement from './statement'
 import { useSearchParams } from 'next/navigation'
-import { useProfitLossQuery } from '@/redux/feature/userSlice'
+import { useGlobalProfitLossQuery, useProfitLossQuery } from '@/redux/feature/userSlice'
 import { Suspense, useMemo, useState } from 'react'
 import { exportProfitLossPDF } from '@/lib/Exportprofitlosspdf'
 
 function ProfitLossOverview() {
   const searchParams = useSearchParams()
-  const [page, setPage]   = useState(1)
+  const [page, setPage] = useState(1)
   const [limit, setLimit] = useState(10)
   const [exporting, setExporting] = useState(false)
 
   const queryUserId = searchParams.get('userId')
-  const userId      = queryUserId || ''
+  const userId = queryUserId || ''
+  const isGlobalMode = !userId
 
-  const { data, isLoading, isError } = useProfitLossQuery(
+  const {
+    data: userData,
+    isLoading: isUserLoading,
+    isError: isUserError,
+  } = useProfitLossQuery(
     { id: userId, page, limit },
-    { skip: !userId },
+    { skip: isGlobalMode },
   )
 
-  const report = data?.data
-  const meta   = useMemo(() => report?.meta ?? data?.meta, [data?.meta, report?.meta])
+  const {
+    data: globalData,
+    isLoading: isGlobalLoading,
+    isError: isGlobalError,
+  } = useGlobalProfitLossQuery(undefined, {
+    skip: !isGlobalMode,
+  })
+
+  const activeData = isGlobalMode ? globalData : userData
+  const isLoading = isGlobalMode ? isGlobalLoading : isUserLoading
+  const isError = isGlobalMode ? isGlobalError : isUserError
+
+  const report = activeData?.data
+  const meta = useMemo(() => report?.meta ?? activeData?.meta, [activeData?.meta, report?.meta])
 
   const handleLimitChange = (nextLimit: number) => {
     setLimit(nextLimit)
@@ -150,10 +167,10 @@ function ProfitLossOverview() {
   }
 
   const handleExport = async () => {
-    if (!report || !userId) return
+    if (!report) return
     setExporting(true)
     try {
-      await exportProfitLossPDF(report, userId)
+      await exportProfitLossPDF(report, userId || 'global')
     } catch (err) {
       console.error('PDF export failed:', err)
       alert('Export failed. Please try again.')
@@ -186,7 +203,7 @@ function ProfitLossOverview() {
           {/* ── Export button ── */}
           <Button
             onClick={handleExport}
-            disabled={exporting || isLoading || !report || !userId}
+            disabled={exporting || isLoading || !report}
             className="bg-[#090A58] rounded-full hover:bg-[#0d0f70] text-white disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {exporting ? (
@@ -204,9 +221,9 @@ function ProfitLossOverview() {
         </div>
       </div>
 
-      {!userId && (
+      {isGlobalMode && (
         <p className="text-sm text-muted-foreground">
-          User ID not found. Add `?userId=...` in URL or login first.
+          User ID not found in search params. Showing global profit and loss report.
         </p>
       )}
 

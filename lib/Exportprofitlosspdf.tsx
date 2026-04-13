@@ -3,7 +3,7 @@ import autoTable from 'jspdf-autotable'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface MonthlyData {
-  month: string
+  month: string | number
   income?: number
   expense?: number
   profit?: number
@@ -15,7 +15,7 @@ interface Transaction {
   notes?: string
   category: string
   amount: string | number
-  type: 'INCOME' | 'EXPENSE'
+  type: string
 }
 
 interface ProfitLossReport {
@@ -31,17 +31,17 @@ interface ProfitLossReport {
 }
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
-const NAVY    = [9,  10,  88]  as [number,number,number]
-const GOLD    = [234,179,  8]  as [number,number,number]
-const EMERALD = [5,  150, 105] as [number,number,number]
-const CRIMSON = [185, 28,  28] as [number,number,number]
-const LIGHT   = [245,246,255]  as [number,number,number]
-const MUTED   = [120,122,160]  as [number,number,number]
-const WHITE   = [255,255,255]  as [number,number,number]
-const DARK    = [15,  17,  60] as [number,number,number]
+const NAVY = [9, 10, 88] as [number, number, number]
+const GOLD = [234, 179, 8] as [number, number, number]
+const EMERALD = [5, 150, 105] as [number, number, number]
+const CRIMSON = [185, 28, 28] as [number, number, number]
+const LIGHT = [245, 246, 255] as [number, number, number]
+const MUTED = [120, 122, 160] as [number, number, number]
+const WHITE = [255, 255, 255] as [number, number, number]
+const DARK = [15, 17, 60] as [number, number, number]
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const $  = (v?: number) =>
+const $ = (v?: number) =>
   `$${(v ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
 const dt = (v: string) =>
@@ -53,7 +53,7 @@ const pct = (v?: number) => `${(v ?? 0).toFixed(2)}%`
 function card(
   pdf: jsPDF,
   x: number, y: number, w: number, h: number,
-  accentColor?: [number,number,number],
+  accentColor?: [number, number, number],
 ) {
   pdf.setFillColor(...LIGHT)
   pdf.roundedRect(x, y, w, h, 3, 3, 'F')
@@ -69,10 +69,10 @@ export async function exportProfitLossPDF(
   report: ProfitLossReport,
   userId: string,
 ) {
-  const pdf  = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-  const W    = 210
-  const now  = new Date()
-  const ref  = `PL-${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}-${userId.slice(-6).toUpperCase()}`
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const W = 210
+  const now = new Date()
+  const ref = `PL-${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}-${userId.slice(-6).toUpperCase()}`
 
   /* ══════════════════════════════════════════════════════
      1.  HERO HEADER
@@ -126,19 +126,19 @@ export async function exportProfitLossPDF(
   /* ══════════════════════════════════════════════════════
      2.  KPI SUMMARY CARDS  (4 across)
   ══════════════════════════════════════════════════════ */
-  const isProfit  = (report.net_profit ?? 0) >= (report.net_loss ?? 0)
-  const netValue  = isProfit ? report.net_profit : report.net_loss
-  const netLabel  = isProfit ? 'Net Profit' : 'Net Loss'
-  const netColor  = isProfit ? EMERALD : CRIMSON
+  const isProfit = (report.net_profit ?? 0) >= (report.net_loss ?? 0)
+  const netValue = isProfit ? report.net_profit : report.net_loss
+  const netLabel = isProfit ? 'Net Profit' : 'Net Loss'
+  const netColor = isProfit ? EMERALD : CRIMSON
 
   const kpis = [
-    { label: 'Total Income',    value: $(report.total_income),   accent: EMERALD },
-    { label: 'Total Expense',   value: $(report.total_expense),  accent: CRIMSON },
-    { label: netLabel,          value: $(netValue),              accent: netColor },
-    { label: 'Profit Margin',   value: pct(report.profit_margin), accent: NAVY },
+    { label: 'Total Income', value: $(report.total_income), accent: EMERALD },
+    { label: 'Total Expense', value: $(report.total_expense), accent: CRIMSON },
+    { label: netLabel, value: $(netValue), accent: netColor },
+    { label: 'Profit Margin', value: pct(report.profit_margin), accent: NAVY },
   ]
 
-  const gap   = 5
+  const gap = 5
   const cardW = (W - 14 * 2 - gap * 3) / 4
   const cardY = 51
 
@@ -186,8 +186,8 @@ export async function exportProfitLossPDF(
 
     autoTable(pdf, {
       startY: cursor,
-      head:   [['Month', 'Income', 'Expense', 'Net']],
-      body:   monthlyBody,
+      head: [['Month', 'Income', 'Expense', 'Net']],
+      body: monthlyBody,
       margin: { left: 14, right: 14 },
       styles: {
         font: 'helvetica', fontSize: 8,
@@ -235,7 +235,7 @@ export async function exportProfitLossPDF(
     cursor += 10
 
     const totalExp = report.total_expense ?? 1
-    const catBody  = catEntries
+    const catBody = catEntries
       .sort((a, b) => b[1] - a[1])
       .map(([cat, amt]) => [
         cat,
@@ -245,8 +245,8 @@ export async function exportProfitLossPDF(
 
     autoTable(pdf, {
       startY: cursor,
-      head:   [['Category', 'Amount', 'Share']],
-      body:   catBody,
+      head: [['Category', 'Amount', 'Share']],
+      body: catBody,
       margin: { left: 14, right: 14 },
       styles: {
         font: 'helvetica', fontSize: 8,
@@ -298,8 +298,8 @@ export async function exportProfitLossPDF(
 
     autoTable(pdf, {
       startY: cursor,
-      head:   [['Date', 'Description', 'Category', 'Amount', 'Type']],
-      body:   txBody,
+      head: [['Date', 'Description', 'Category', 'Amount', 'Type']],
+      body: txBody,
       margin: { left: 14, right: 14 },
       styles: {
         font: 'helvetica', fontSize: 7.5,

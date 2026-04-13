@@ -325,7 +325,16 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    // /transaction/global-profit-loss
+    globalProfitLoss: builder.query<ProfitLossReportResponse, void>({
+      query: () => ({
+        url: `/transaction/global-profit-loss`,
+        method: "GET",
+      }),
+      providesTags: ["User"],
+    }),
+
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery } = userApi;
