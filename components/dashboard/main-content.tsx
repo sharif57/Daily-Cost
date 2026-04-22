@@ -238,26 +238,26 @@ export default function MainContent() {
           color=""
           icon={<Users />}
         />
-        <StatCard
+        {/* <StatCard
           title="Upcoming Deadlines"
           value={formatNumber(report?.upcomingReminders)}
           change="Action REQD"
           trend="warning"
           color=""
           icon={<DateIcon />}
-        />
+        /> */}
       </div>
 
       {/* Second Row Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard
+        {/* <StatCard
           title="Total Revenue"
           value={formatCurrency(report?.totalRevenue)}
           change={report && report.totalRevenue < 0 ? 'Negative trend' : 'Positive trend'}
           trend={report && report.totalRevenue < 0 ? 'down' : 'up'}
           color=""
           icon={<Revenue />}
-        />
+        /> */}
         {/* <StatCard
           title="Total Expense"
           value={formatCurrency(report?.totalExpense)}

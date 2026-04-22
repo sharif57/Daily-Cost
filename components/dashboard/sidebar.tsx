@@ -43,7 +43,7 @@ const menuItems = [
     submenu: true,
     href: '/finance',
     children: [
-      { id: 'global-dashboard', label: 'Global Financial Dashboard', href: '/finance/dashboard', activePath: '/finance/dashboard' },
+      // { id: 'global-dashboard', label: 'Global Financial Dashboard', href: '/finance/dashboard', activePath: '/finance/dashboard' },
       // { id: 'income-overview', label: 'Income Overview', href: '/users', activePath: '/finance/income' },
       // { id: 'expense-overview', label: 'Expense Overview', href: '/users', activePath: '/finance/expenses' },
       { id: 'profit-loss', label: 'Profit & Loss Summary', href: '/finance/profit-loss', activePath: '/finance/profit-loss' },
