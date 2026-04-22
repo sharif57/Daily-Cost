@@ -206,14 +206,14 @@ export default function UserProfileCard() {
 
       {/* Action Buttons */}
       <div className="space-y-4">
-        <Link href={`/users/${userId}/financial-overview`} className="block">
+        {/* <Link href={`/users/${userId}/financial-overview`} className="block">
           <Button
             variant="default"
             className="w-full bg-[#090A58] hover:bg-[#090A58] rounded-full text-white text-[16px] font-medium p-6"
           >
             View Financial Overview
           </Button>
-        </Link>
+        </Link> */}
 
         {/* <Link href={`/finance/income?userId=${userId}`} className="block">
           <Button
