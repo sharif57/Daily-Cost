@@ -334,7 +334,16 @@ export const userApi = baseApi.injectEndpoints({
       providesTags: ["User"],
     }),
 
+    // api/v1/user/delete-document/76b15875-fb36-4664-a9d0-cd135a0ce016?documentIndex=0
+    deleteDocument: builder.mutation({
+      query: ({ id, documentIndex }) => ({
+        url: `/user/delete-document/${id}?documentIndex=${documentIndex}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation } = userApi;

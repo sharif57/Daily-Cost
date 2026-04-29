@@ -12,8 +12,8 @@ import AuthLogo from '../icon/authLogo'
 export default function LoginForm() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('abdul@gmail.com')
-  const [password, setPassword] = useState('12345678')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
 
   const [login, { isLoading }] = useLoginMutation();
 

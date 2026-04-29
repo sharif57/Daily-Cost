@@ -36,18 +36,18 @@ const menuItems = [
     icon: Users,
     href: '/config'
   },
-  {
-    id: 'profit-loss',
-    label: 'Profit & Loss Summary',
-    icon: Wallet,
-    href: '/finance/profit-loss',
-    // children: [
-    //   // { id: 'global-dashboard', label: 'Global Financial Dashboard', href: '/finance/dashboard', activePath: '/finance/dashboard' },
-    //   // { id: 'income-overview', label: 'Income Overview', href: '/users', activePath: '/finance/income' },
-    //   // { id: 'expense-overview', label: 'Expense Overview', href: '/users', activePath: '/finance/expenses' },
-    //   // { id: 'profit-loss', label: 'Profit & Loss Summary', href: '/finance/profit-loss', activePath: '/finance/profit-loss' },
-    // ],
-  },
+  // {
+  //   id: 'profit-loss',
+  //   label: 'Profit & Loss Summary',
+  //   icon: Wallet,
+  //   href: '/finance/profit-loss',
+  //   // children: [
+  //   //   // { id: 'global-dashboard', label: 'Global Financial Dashboard', href: '/finance/dashboard', activePath: '/finance/dashboard' },
+  //   //   // { id: 'income-overview', label: 'Income Overview', href: '/users', activePath: '/finance/income' },
+  //   //   // { id: 'expense-overview', label: 'Expense Overview', href: '/users', activePath: '/finance/expenses' },
+  //   //   // { id: 'profit-loss', label: 'Profit & Loss Summary', href: '/finance/profit-loss', activePath: '/finance/profit-loss' },
+  //   // ],
+  // },
   {
     id: 'reminders',
     label: 'Reminders',
