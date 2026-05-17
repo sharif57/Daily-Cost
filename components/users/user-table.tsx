@@ -17,12 +17,15 @@ function getAvatarColor(initials: string): string {
     'bg-pink-400',
     'bg-green-400',
   ]
-  const index = initials.charCodeAt(0) % colors.length
+  const code = initials?.charCodeAt(0) ?? 0
+  const index = Math.abs(code) % colors.length
   return colors[index]
 }
 
-function getInitials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
+function getInitials(name?: string | null): string {
+  const safeName = (name ?? '').trim()
+  if (!safeName) return 'U'
+  const parts = safeName.split(/\s+/).filter(Boolean)
   return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() ?? '').join('') || 'U'
 }
 

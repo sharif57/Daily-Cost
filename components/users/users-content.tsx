@@ -34,6 +34,8 @@ export default function UsersContent() {
 
   const { data, isLoading, isFetching, isError } = useAllUsersQuery(queryParams)
 
+  console.log(data, '=============')
+
   const users = data?.data?.data ?? []
   const meta = data?.data?.meta
 
@@ -111,8 +113,10 @@ export default function UsersContent() {
         pdf.setFont('helvetica', 'normal')
         pdf.setFontSize(7.5)
 
-        const name = user.name.length > 24 ? `${user.name.slice(0, 24)}...` : user.name
-        const email = user.email.length > 35 ? `${user.email.slice(0, 35)}...` : user.email
+        const rawName = user.name ?? ''
+        const name = rawName.length > 24 ? `${rawName.slice(0, 24)}...` : (rawName || 'N/A')
+        const rawEmail = user.email ?? ''
+        const email = rawEmail.length > 35 ? `${rawEmail.slice(0, 35)}...` : (rawEmail || 'N/A')
 
         pdf.text(name, colX.name, y + 4.7)
         pdf.text(email, colX.email, y + 4.7)
