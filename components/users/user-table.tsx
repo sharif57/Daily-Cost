@@ -2,10 +2,12 @@
 
 import Link from 'next/link'
 import { AppUser } from '@/redux/feature/userSlice'
+import { Trash2 } from 'lucide-react'
 
 interface UserTableProps {
   users: AppUser[]
   isLoading: boolean
+  onDeleteUser: (user: AppUser) => void
 }
 
 function getAvatarColor(initials: string): string {
@@ -40,6 +42,7 @@ function formatDate(value: string): string {
 export default function UserTable({
   users,
   isLoading,
+  onDeleteUser,
 }: UserTableProps) {
 
   const IMAGE = process.env.NEXT_PUBLIC_IMAGE_BASE_URL || ''
@@ -73,12 +76,15 @@ export default function UserTable({
             <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
               Joined
             </th>
+            <th className="px-4 py-3 text-left text-xs font-semibold text-foreground">
+              Action
+            </th>
           </tr>
         </thead>
         <tbody>
           {isLoading && (
             <tr>
-              <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted-foreground">
+              <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted-foreground">
                 Loading users...
               </td>
             </tr>
@@ -86,7 +92,7 @@ export default function UserTable({
 
           {!isLoading && users.length === 0 && (
             <tr>
-              <td colSpan={7} className="px-4 py-10 text-center text-sm text-muted-foreground">
+              <td colSpan={8} className="px-4 py-10 text-center text-sm text-muted-foreground">
                 No users found for the selected filters.
               </td>
             </tr>
@@ -152,6 +158,16 @@ export default function UserTable({
               </td>
               <td className="px-4 py-3">
                 <p className="text-sm text-muted-foreground">{formatDate(user.created_at)}</p>
+              </td>
+              <td className="px-4 py-3">
+                <button
+                  type="button"
+                  onClick={() => onDeleteUser(user)}
+                  className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
               </td>
             </tr>
           ))}

@@ -4,7 +4,18 @@ import React, { useMemo, useState } from 'react'
 import { Download, Search } from 'lucide-react'
 import UserTable from './user-table'
 import { Button } from '@/components/ui/button'
-import { useAllUsersQuery } from '@/redux/feature/userSlice'
+import { AppUser, useAllUsersQuery, useDeleteUserMutation } from '@/redux/feature/userSlice'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import { useToast } from '@/components/ui/use-toast'
 import jsPDF from 'jspdf'
 
 export default function UsersContent() {
@@ -14,6 +25,9 @@ export default function UsersContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [isExporting, setIsExporting] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<AppUser | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const { toast } = useToast()
 
   const queryParams = useMemo(() => {
     const normalizedSearch = searchTerm.trim()
@@ -36,6 +50,8 @@ export default function UsersContent() {
 
   console.log(data, '=============')
 
+  const [deleteUser, { isLoading: isDeletingUser }] = useDeleteUserMutation()
+
   const users = data?.data?.data ?? []
   const meta = data?.data?.meta
 
@@ -44,6 +60,33 @@ export default function UsersContent() {
 
   const totalPages = meta?.totalPage ?? 1
   const totalUsers = meta?.total ?? 0
+
+  const openDeleteDialog = (user: AppUser) => {
+    setUserToDelete(user)
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleDeleteUser = async () => {
+    if (!userToDelete) {
+      return
+    }
+
+    try {
+      await deleteUser(userToDelete.id).unwrap()
+      toast({
+        title: 'User deleted',
+        description: `${userToDelete.name || 'The selected user'} was deleted successfully.`,
+      })
+      setIsDeleteDialogOpen(false)
+      setUserToDelete(null)
+    } catch (error: any) {
+      toast({
+        title: 'Delete failed',
+        description: error?.data?.message || 'Failed to delete user. Please try again.',
+        variant: 'destructive',
+      })
+    }
+  }
 
   const handleExportUsersPdf = () => {
     if (users.length === 0 || isExporting) {
@@ -227,7 +270,40 @@ export default function UsersContent() {
       )}
 
       {/* Table Section */}
-      <UserTable users={users} isLoading={isLoading} />
+      <UserTable users={users} isLoading={isLoading} onDeleteUser={openDeleteDialog} />
+
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open)
+          if (!open) {
+            setUserToDelete(null)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently remove {userToDelete?.name || 'this user'} from the system.
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingUser}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault()
+                void handleDeleteUser()
+              }}
+              disabled={isDeletingUser}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              {isDeletingUser ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Pagination Section */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-4 border-t border-border">

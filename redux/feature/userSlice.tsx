@@ -343,7 +343,16 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
+    // user/:id
+    deleteUser: builder.mutation({
+      query: (id) => ({
+        url: `/user/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["User"],
+    }),
+
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation, useDeleteUserMutation } = userApi;
