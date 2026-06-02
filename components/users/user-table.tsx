@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import { AppUser } from '@/redux/feature/userSlice'
-import { Trash2 } from 'lucide-react'
+import { RotateCcw, Trash2 } from 'lucide-react'
 
 interface UserTableProps {
   users: AppUser[]
   isLoading: boolean
+  onToggleSuspend: (user: AppUser) => void
   onDeleteUser: (user: AppUser) => void
 }
 
@@ -42,6 +43,7 @@ function formatDate(value: string): string {
 export default function UserTable({
   users,
   isLoading,
+  onToggleSuspend,
   onDeleteUser,
 }: UserTableProps) {
 
@@ -101,7 +103,7 @@ export default function UserTable({
           {!isLoading && users.map((user) => (
             <tr
               key={user.id}
-              className="border-b border-border hover:bg-secondary/50 transition-colors"
+              className={`border-b border-border transition-colors ${user.is_deleted ? 'bg-red-100 hover:bg-red-50' : 'hover:bg-secondary/50'}`}
             >
               <td className="px-4 py-3">
                 <input
@@ -147,8 +149,8 @@ export default function UserTable({
                 </p>
               </td>
               <td className="px-4 py-3">
-                <span className={`text-sm font-medium ${user.online ? 'text-green-600' : 'text-gray-500'}`}>
-                  {user.online ? 'Active' : 'Inactive'}
+                <span className={`text-sm font-medium ${user.is_deleted ? 'text-red-600' : user.online ? 'text-green-600' : 'text-gray-500'}`}>
+                  {user.is_deleted ? 'Suspended' : user.online ? 'Active' : 'Inactive'}
                 </span>
               </td>
               <td className="px-4 py-3">
@@ -160,14 +162,24 @@ export default function UserTable({
                 <p className="text-sm text-muted-foreground">{formatDate(user.created_at)}</p>
               </td>
               <td className="px-4 py-3">
-                <button
-                  type="button"
-                  onClick={() => onDeleteUser(user)}
-                  className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onDeleteUser(user)}
+                    className="inline-flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onToggleSuspend(user)}
+                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${user.is_deleted ? 'border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100'}`}
+                  >
+                    {user.is_deleted ? <RotateCcw className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
+                    {user.is_deleted ? 'Reactivate' : 'Suspend'}
+                  </button>
+                </div>
               </td>
             </tr>
           ))}

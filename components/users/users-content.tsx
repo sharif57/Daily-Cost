@@ -1,10 +1,10 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Download, Search } from 'lucide-react'
 import UserTable from './user-table'
 import { Button } from '@/components/ui/button'
-import { AppUser, useAllUsersQuery, useDeleteUserMutation } from '@/redux/feature/userSlice'
+import { AppUser, useAllUsersQuery, useDeleteUserMutation, useSuspenseUserMutation } from '@/redux/feature/userSlice'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,8 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useToast } from '@/components/ui/use-toast'
 import jsPDF from 'jspdf'
+import { toast } from 'sonner'
 
 export default function UsersContent() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -25,9 +25,9 @@ export default function UsersContent() {
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [isExporting, setIsExporting] = useState(false)
-  const [userToDelete, setUserToDelete] = useState<AppUser | null>(null)
+  const [selectedUser, setSelectedUser] = useState<AppUser | null>(null)
+  const [pendingAction, setPendingAction] = useState<'delete' | 'suspend' | 'reactivate' | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const { toast } = useToast()
 
   const queryParams = useMemo(() => {
     const normalizedSearch = searchTerm.trim()
@@ -48,43 +48,50 @@ export default function UsersContent() {
 
   const { data, isLoading, isFetching, isError } = useAllUsersQuery(queryParams)
 
-  console.log(data, '=============')
-
   const [deleteUser, { isLoading: isDeletingUser }] = useDeleteUserMutation()
+  const [suspenseUser, { isLoading: isSuspendingUser }] = useSuspenseUserMutation()
 
   const users = data?.data?.data ?? []
   const meta = data?.data?.meta
 
   const roles = ['ALL', 'ADMIN', 'USER']
-  const statuses = ['All Status', 'Active', 'Inactive']
+  const statuses = ['All Status', 'Active', 'Suspended']
 
   const totalPages = meta?.totalPage ?? 1
   const totalUsers = meta?.total ?? 0
 
-  const openDeleteDialog = (user: AppUser) => {
-    setUserToDelete(user)
+  const openToggleDialog = (user: AppUser) => {
+    setSelectedUser(user)
+    setPendingAction(user.is_deleted ? 'reactivate' : 'suspend')
     setIsDeleteDialogOpen(true)
   }
 
-  const handleDeleteUser = async () => {
-    if (!userToDelete) {
-      return
-    }
+  const openDeleteDialog = (user: AppUser) => {
+    setSelectedUser(user)
+    setPendingAction('delete')
+    setIsDeleteDialogOpen(true)
+  }
+
+  const handleAction = async () => {
+    if (!selectedUser || !pendingAction) return
 
     try {
-      await deleteUser(userToDelete.id).unwrap()
-      toast({
-        title: 'User deleted',
-        description: `${userToDelete.name || 'The selected user'} was deleted successfully.`,
-      })
+      if (pendingAction === 'delete') {
+        const response = await deleteUser(selectedUser.id).unwrap()
+        toast.success(response?.message || `${selectedUser.name || 'The selected user'} was deleted successfully.`)
+      } else {
+        const response = await suspenseUser(selectedUser.id).unwrap()
+        const defaultMsg = pendingAction === 'reactivate'
+          ? `${selectedUser.name || 'The selected user'} is active again.`
+          : `${selectedUser.name || 'The selected user'} has been suspended.`
+        toast.success(response?.message || defaultMsg)
+      }
+
       setIsDeleteDialogOpen(false)
-      setUserToDelete(null)
+      setSelectedUser(null)
+      setPendingAction(null)
     } catch (error: any) {
-      toast({
-        title: 'Delete failed',
-        description: error?.data?.message || 'Failed to delete user. Please try again.',
-        variant: 'destructive',
-      })
+      toast.error(error?.data?.message || 'Failed to perform action. Please try again.')
     }
   }
 
@@ -270,36 +277,57 @@ export default function UsersContent() {
       )}
 
       {/* Table Section */}
-      <UserTable users={users} isLoading={isLoading} onDeleteUser={openDeleteDialog} />
+      <UserTable
+        users={users}
+        isLoading={isLoading}
+        onToggleSuspend={openToggleDialog}
+        onDeleteUser={openDeleteDialog}
+      />
 
       <AlertDialog
         open={isDeleteDialogOpen}
         onOpenChange={(open) => {
           setIsDeleteDialogOpen(open)
           if (!open) {
-            setUserToDelete(null)
+            setSelectedUser(null)
+            setPendingAction(null)
           }
         }}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete user?</AlertDialogTitle>
+            <AlertDialogTitle>
+              {pendingAction === 'reactivate' ? 'Reactivate user?' : pendingAction === 'delete' ? 'Delete user?' : 'Suspend user?'}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently remove {userToDelete?.name || 'this user'} from the system.
-              This action cannot be undone.
+              {pendingAction === 'reactivate'
+                ? `This will restore ${selectedUser?.name || 'this user'} and make the account active again.`
+                : pendingAction === 'delete'
+                  ? `This will permanently remove ${selectedUser?.name || 'this user'} from the system. This action cannot be undone.`
+                  : `This will suspend ${selectedUser?.name || 'this user'}. Suspended users cannot access the platform until reactivated.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeletingUser}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeletingUser || isSuspendingUser}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={(event) => {
                 event.preventDefault()
-                void handleDeleteUser()
+                void handleAction()
               }}
-              disabled={isDeletingUser}
-              className="bg-red-600 text-white hover:bg-red-700"
+              disabled={isDeletingUser || isSuspendingUser}
+              className={pendingAction === 'reactivate' ? 'bg-emerald-600 text-white hover:bg-emerald-700' : pendingAction === 'delete' ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-yellow-600 text-white hover:bg-yellow-700'}
             >
-              {isDeletingUser ? 'Deleting...' : 'Delete'}
+              {pendingAction === 'reactivate'
+                ? isSuspendingUser
+                  ? 'Reactivating...'
+                  : 'Reactivate'
+                : pendingAction === 'delete'
+                  ? isDeletingUser
+                    ? 'Deleting...'
+                    : 'Delete'
+                  : isSuspendingUser
+                    ? 'Suspending...'
+                    : 'Suspend'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
