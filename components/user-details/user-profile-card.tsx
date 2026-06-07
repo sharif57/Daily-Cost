@@ -944,9 +944,7 @@ export default function UserProfileCard() {
         const previousScore = selectedCreditScore
         setSelectedCreditScore(value)
         try {
-            const formData = new FormData()
-            formData.append('creditScore', value)
-            await updateFinanceProfile({ id: userId, data: formData }).unwrap()
+            await updateFinanceProfile({ id: userId, data: { creditScore: value } }).unwrap()
             toast.success('Credit score updated successfully.')
         } catch (error: any) {
             setSelectedCreditScore(previousScore)
