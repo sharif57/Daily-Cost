@@ -6,10 +6,11 @@ export interface AppUser {
   id: string;
   created_at: string;
   updated_at: string;
-  name: string;
+  name: string | null;
   password: string;
   email: string;
   phone: string | null;
+  creditScore?: ECreditScore | null;
   role: string;
   image: string;
   gender: string;
@@ -19,10 +20,35 @@ export interface AppUser {
   online: boolean;
   is_deleted: boolean;
   is_verified: boolean;
-  document?: string;
+  document?: string[] | string | null;
   auth_is_reset_password: boolean;
   auth_one_time_code: string | number | null;
   auth_expire_at: string | null;
+  finance_profile?: FinanceProfile | null;
+}
+
+export enum ECreditScore {
+  AA = 'AA',
+  BB = 'BB',
+  CC = 'CC',
+  DD = 'DD',
+  EE = 'EE',
+  FF = 'FF',
+  GG = 'GG',
+  HH = 'HH',
+  HX = 'HX',
+  GX = 'GX',
+}
+
+export interface FinanceProfile {
+  id: string;
+  user_id: string;
+  total_loan_amount: string;
+  loan_tenure: number;
+  monthly_repayment_amount: string;
+  loan_start_date: string | null;
+  monthly_due_day: number;
+  remaining_tenure: number;
 }
 
 export interface SingleUserResponse {
@@ -361,7 +387,17 @@ export const userApi = baseApi.injectEndpoints({
       invalidatesTags: ["User"],
     }),
 
+    //  method patch : update-finance-profile/id
+    updateFinanceProfile: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/user/update-finance-profile/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation, useDeleteUserMutation, useSuspenseUserMutation } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation, useDeleteUserMutation, useSuspenseUserMutation, useUpdateFinanceProfileMutation } = userApi;
