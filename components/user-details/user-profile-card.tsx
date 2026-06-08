@@ -778,6 +778,7 @@ import {
     Settings2,
     Trash2,
     X,
+    Settings2Icon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -1132,6 +1133,13 @@ export default function UserProfileCard() {
                                 Add Document
                             </Button>
                         </button>
+                        <button type="button" onClick={() => setIsFinanceModalOpen(true)} className="block w-full">
+                            <Button variant="outline"
+                                className="w-full rounded-full bg-[#B68F24] py-6 text-base font-medium text-white hover:bg-[#B68F24]/90">
+                                <Settings2Icon className="mr-2 h-4 w-4" />
+                                Financial Information
+                            </Button>
+                        </button>
                     </div>
                 </section>
 
@@ -1157,13 +1165,13 @@ export default function UserProfileCard() {
                                         <p className="text-sm font-semibold text-foreground">{row.value}</p>
                                     </div>
                                 </div>
-                                <button
+                                {/* <button
                                     type="button"
                                     onClick={() => setIsFinanceModalOpen(true)}
                                     className="shrink-0 text-sm font-semibold text-[#B68F24] hover:text-[#977316]"
                                 >
                                     {row.action}
-                                </button>
+                                </button> */}
                             </div>
                         ))}
                     </div>
