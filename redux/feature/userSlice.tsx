@@ -24,7 +24,7 @@ export interface AppUser {
   auth_is_reset_password: boolean;
   auth_one_time_code: string | number | null;
   auth_expire_at: string | null;
-  finance_profile?: FinanceProfile | null;
+  finance_profile?: FinanceProfile[] | FinanceProfile | null;
 }
 
 export enum ECreditScore {
@@ -43,11 +43,12 @@ export enum ECreditScore {
 export interface FinanceProfile {
   id: string;
   user_id: string;
+  bank_name?: string;
   total_loan_amount: string;
   loan_tenure: number;
   monthly_repayment_amount: string;
   loan_start_date: string | null;
-  monthly_due_day: number;
+  monthly_due_day: string | number | null;
   remaining_tenure: number;
 }
 
@@ -396,8 +397,37 @@ export const userApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["User"],
     }),
+    // /user/create-finance/73ce0546-4036-41de-b737-961c4491e246
+    createFinanceProfile: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/user/create-finance/${id}`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // /user/update-credit/73ce0546-4036-41de-b737-961c4491e246
+    updateCreditScore: builder.mutation({
+      query: ({ id, data }) => ({
+        url: `/user/update-credit/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // /user/update-finance/73ce0546-4036-41de-b737-961c4491e246/739c0928-676d-453d-90a5-0f3268c989bf
+    updateFinance: builder.mutation({
+      query: ({ id, financeId, data }) => ({
+        url: `/user/update-finance/${id}/${financeId}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["User"],
+    }),
 
   }),
 });
 
-export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation, useDeleteUserMutation, useSuspenseUserMutation, useUpdateFinanceProfileMutation } = userApi;
+export const { useUserProfileQuery, useUpdateProfileMutation, useAllUsersQuery, useSingleUserQuery, useFinancialOverviewQuery, useUserIncomeOverviewQuery, useGlobalTransactionOverviewQuery, useUserExpenseOverviewQuery, useProfitLossQuery, useUpdateDocumentMutation, useApproveGuestMutation, useRejectGuestMutation, useGlobalTransactionDashboardQuery, useGlobalProfitLossQuery, useDeleteDocumentMutation, useDeleteUserMutation, useSuspenseUserMutation, useUpdateFinanceProfileMutation, useCreateFinanceProfileMutation, useUpdateCreditScoreMutation, useUpdateFinanceMutation, } = userApi;
